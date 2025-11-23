@@ -1,3 +1,3 @@
-### Mega Mart Multi Vendor E-Commerce platform
+### BDM Bazar E-Commerce platform
 
-Live link : https://mega-mart-weld.vercel.app
+Live link : 
