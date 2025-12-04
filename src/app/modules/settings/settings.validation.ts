@@ -46,7 +46,26 @@ export const createSettingsValidationSchema = z.object({
           .optional(),
       })
       .optional(),
-    deliveryCharge: z.number().optional(),
+    deliveryCharge: z
+      .object({
+        insideDhaka: z
+          .object({
+            steadfast: z.number().min(0).optional(),
+            pathao: z.number().min(0).optional(),
+            redx: z.number().min(0).optional(),
+            sundarban: z.number().min(0).optional(),
+          })
+          .optional(),
+        outsideDhaka: z
+          .object({
+            steadfast: z.number().min(0).optional(),
+            pathao: z.number().min(0).optional(),
+            redx: z.number().min(0).optional(),
+            sundarban: z.number().min(0).optional(),
+          })
+          .optional(),
+      })
+      .optional(),
     contactAndSocial: z
       .object({
         address: z.string().optional(),

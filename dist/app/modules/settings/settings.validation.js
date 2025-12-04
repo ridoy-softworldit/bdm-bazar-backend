@@ -48,7 +48,26 @@ exports.createSettingsValidationSchema = zod_1.z.object({
                 .optional(),
         })
             .optional(),
-        deliveryCharge: zod_1.z.number().optional(),
+        deliveryCharge: zod_1.z
+            .object({
+            insideDhaka: zod_1.z
+                .object({
+                steadfast: zod_1.z.number().min(0).optional(),
+                pathao: zod_1.z.number().min(0).optional(),
+                redx: zod_1.z.number().min(0).optional(),
+                sundarban: zod_1.z.number().min(0).optional(),
+            })
+                .optional(),
+            outsideDhaka: zod_1.z
+                .object({
+                steadfast: zod_1.z.number().min(0).optional(),
+                pathao: zod_1.z.number().min(0).optional(),
+                redx: zod_1.z.number().min(0).optional(),
+                sundarban: zod_1.z.number().min(0).optional(),
+            })
+                .optional(),
+        })
+            .optional(),
         contactAndSocial: zod_1.z
             .object({
             address: zod_1.z.string().optional(),

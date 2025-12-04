@@ -52,7 +52,7 @@ const getMobileMfsFromDB = async () => {
 // ✅ Get Delivery Charge Only (if exists)
 const getDeliveryChargeFromDB = async () => {
   const settings = await SettingsModel.findOne();
-  if (!settings?.deliveryCharge && settings?.deliveryCharge !== 0)
+  if (!settings?.deliveryCharge)
     throw new AppError(404, "Delivery charge not found!");
   return { deliveryCharge: settings.deliveryCharge };
 };
@@ -307,6 +307,20 @@ const updateSettingsOnDB = async (
     updatedData.contactAndSocial = {
       ...(settings.contactAndSocial || {}),
       ...(updatedData.contactAndSocial || {}),
+    };
+  }
+
+  // ✅ Deep merge for deliveryCharge
+  if (updatedData.deliveryCharge) {
+    updatedData.deliveryCharge = {
+      insideDhaka: {
+        ...(settings.deliveryCharge?.insideDhaka || {}),
+        ...(updatedData.deliveryCharge.insideDhaka || {}),
+      },
+      outsideDhaka: {
+        ...(settings.deliveryCharge?.outsideDhaka || {}),
+        ...(updatedData.deliveryCharge.outsideDhaka || {}),
+      },
     };
   }
 

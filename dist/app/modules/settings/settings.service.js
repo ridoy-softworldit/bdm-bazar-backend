@@ -61,7 +61,7 @@ const getMobileMfsFromDB = () => __awaiter(void 0, void 0, void 0, function* () 
 // ✅ Get Delivery Charge Only (if exists)
 const getDeliveryChargeFromDB = () => __awaiter(void 0, void 0, void 0, function* () {
     const settings = yield settings_model_1.SettingsModel.findOne();
-    if (!(settings === null || settings === void 0 ? void 0 : settings.deliveryCharge) && (settings === null || settings === void 0 ? void 0 : settings.deliveryCharge) !== 0)
+    if (!(settings === null || settings === void 0 ? void 0 : settings.deliveryCharge))
         throw new handleAppError_1.default(404, "Delivery charge not found!");
     return { deliveryCharge: settings.deliveryCharge };
 });
@@ -188,7 +188,7 @@ const getDeliveryChargeFromDB = () => __awaiter(void 0, void 0, void 0, function
 // };
 // ✅ Update Settings
 const updateSettingsOnDB = (updatedData) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5;
     const settings = yield settings_model_1.SettingsModel.findOne();
     if (!settings)
         throw new handleAppError_1.default(404, "Settings not found!");
@@ -273,6 +273,13 @@ const updateSettingsOnDB = (updatedData) => __awaiter(void 0, void 0, void 0, fu
     // ✅ Deep merge for contactAndSocial (This logic is correct)
     if (updatedData.contactAndSocial) {
         updatedData.contactAndSocial = Object.assign(Object.assign({}, (settings.contactAndSocial || {})), (updatedData.contactAndSocial || {}));
+    }
+    // ✅ Deep merge for deliveryCharge
+    if (updatedData.deliveryCharge) {
+        updatedData.deliveryCharge = {
+            insideDhaka: Object.assign(Object.assign({}, (((_4 = settings.deliveryCharge) === null || _4 === void 0 ? void 0 : _4.insideDhaka) || {})), (updatedData.deliveryCharge.insideDhaka || {})),
+            outsideDhaka: Object.assign(Object.assign({}, (((_5 = settings.deliveryCharge) === null || _5 === void 0 ? void 0 : _5.outsideDhaka) || {})), (updatedData.deliveryCharge.outsideDhaka || {})),
+        };
     }
     // ✅ Update document
     const result = yield settings_model_1.SettingsModel.findOneAndUpdate({}, updatedData, {

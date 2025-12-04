@@ -37,7 +37,20 @@ export type TSettings = {
     description: string;
   };
 
-  deliveryCharge?: number;
+  deliveryCharge?: {
+    insideDhaka?: {
+      steadfast?: number;
+      pathao?: number;
+      redx?: number;
+      sundarban?: number;
+    };
+    outsideDhaka?: {
+      steadfast?: number;
+      pathao?: number;
+      redx?: number;
+      sundarban?: number;
+    };
+  };
 
   mobileMfs?: {
     bKash?: TbKash;

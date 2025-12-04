@@ -46,7 +46,20 @@ const settingsSchema = new mongoose_1.Schema({
         rocket: rocketSchema,
         upay: upaySchema,
     },
-    deliveryCharge: { type: Number, default: 0 },
+    deliveryCharge: {
+        insideDhaka: {
+            steadfast: { type: Number, default: 60 },
+            pathao: { type: Number, default: 65 },
+            redx: { type: Number, default: 70 },
+            sundarban: { type: Number, default: 55 },
+        },
+        outsideDhaka: {
+            steadfast: { type: Number, default: 100 },
+            pathao: { type: Number, default: 110 },
+            redx: { type: Number, default: 120 },
+            sundarban: { type: Number, default: 90 },
+        },
+    },
     contactAndSocial: {
         address: { type: String },
         email: { type: String },
