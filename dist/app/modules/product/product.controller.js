@@ -242,6 +242,16 @@ const getProductsByAuthor = (0, catchAsync_1.default)((req, res) => __awaiter(vo
         meta: result.meta,
     });
 }));
+const getPopularProducts = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield product_service_1.productServices.getPopularProductsFromDB(req.query);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_1.default.OK,
+        message: "Popular products retrieved successfully!",
+        data: result.data,
+        meta: result.meta,
+    });
+}));
 exports.productControllers = {
     createProduct,
     getSingleProduct,
@@ -251,4 +261,5 @@ exports.productControllers = {
     updateProduct,
     getProductsByCategoryandTag,
     getProductsByAuthor,
+    getPopularProducts,
 };

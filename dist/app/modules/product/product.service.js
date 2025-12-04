@@ -266,6 +266,20 @@ const getProductsByAuthorFromDB = (authorId, query) => __awaiter(void 0, void 0,
     const meta = yield productQuery.countTotal();
     return { meta, data };
 });
+const getPopularProductsFromDB = (query) => __awaiter(void 0, void 0, void 0, function* () {
+    const productQuery = new QueryBuilder_1.default(product_model_1.ProductModel.find({ "description.status": "publish" })
+        .populate("categoryAndTags.publisher")
+        .populate("categoryAndTags.categories")
+        .populate("categoryAndTags.tags")
+        .populate("bookInfo.specification.authors")
+        .sort({ "productInfo.sold": -1 }), query)
+        .filter()
+        .paginate()
+        .fields();
+    const data = yield productQuery.modelQuery;
+    const meta = yield productQuery.countTotal();
+    return { meta, data };
+});
 exports.productServices = {
     createProductOnDB,
     getAllProductFromDB,
@@ -275,4 +289,5 @@ exports.productServices = {
     getSingleProductFromDB,
     updateProductOnDB,
     getProductsByAuthorFromDB,
+    getPopularProductsFromDB,
 };

@@ -322,6 +322,26 @@ const getProductsByAuthorFromDB = async (
   return { meta, data };
 };
 
+const getPopularProductsFromDB = async (query: Record<string, unknown>) => {
+  const productQuery = new QueryBuilder(
+    ProductModel.find({ "description.status": "publish" })
+      .populate("categoryAndTags.publisher")
+      .populate("categoryAndTags.categories")
+      .populate("categoryAndTags.tags")
+      .populate("bookInfo.specification.authors")
+      .sort({ "productInfo.sold": -1 }),
+    query
+  )
+    .filter()
+    .paginate()
+    .fields();
+
+  const data = await productQuery.modelQuery;
+  const meta = await productQuery.countTotal();
+
+  return { meta, data };
+};
+
 export const productServices = {
   createProductOnDB,
   getAllProductFromDB,
@@ -331,4 +351,5 @@ export const productServices = {
   getSingleProductFromDB,
   updateProductOnDB,
   getProductsByAuthorFromDB,
+  getPopularProductsFromDB,
 };
