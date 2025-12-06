@@ -116,6 +116,11 @@ const orderSchema = new mongoose_1.Schema({
         type: mongoose_1.Schema.Types.Mixed,
         required: true,
     },
+    deliveryCharge: {
+        type: Number,
+        required: [true, "Delivery charge is required!"],
+        min: [0, "Delivery charge cannot be negative"],
+    },
     totalAmount: {
         type: Number,
         required: true,

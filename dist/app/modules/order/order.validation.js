@@ -137,6 +137,11 @@ exports.createOrderZodSchema = zod_1.z.object({
         .min(1, "At least one order info is required!"),
     customerInfo: customerInfoZodSchema,
     paymentInfo: paymentInfoZodSchema,
+    deliveryCharge: zod_1.z.number({
+        error: (issue) => issue.input === undefined
+            ? "Delivery charge is required!"
+            : "Must be a number!",
+    }).min(0, "Delivery charge cannot be negative"),
     totalAmount: zod_1.z.number({
         error: (issue) => issue.input === undefined
             ? "Total amount is required!"

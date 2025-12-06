@@ -171,6 +171,13 @@ export const createOrderZodSchema = z.object({
 
   paymentInfo: paymentInfoZodSchema,
 
+  deliveryCharge: z.number({
+    error: (issue) =>
+      issue.input === undefined
+        ? "Delivery charge is required!"
+        : "Must be a number!",
+  }).min(0, "Delivery charge cannot be negative"),
+
   totalAmount: z.number({
     error: (issue) =>
       issue.input === undefined

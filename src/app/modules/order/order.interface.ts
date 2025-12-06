@@ -55,6 +55,7 @@ export type TOrder = {
   orderInfo: TOrderInfo[];
   customerInfo: TCustomerInfo;
   paymentInfo: TPaymentInfo | "cash-on";
+  deliveryCharge: number;
   totalAmount: number;
   createdAt?: Date;
   updatedAt?: Date;
