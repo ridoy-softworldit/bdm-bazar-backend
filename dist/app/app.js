@@ -21,9 +21,11 @@ app.use((0, cors_1.default)({
         "http://localhost:3000",
         "http://localhost:3001",
         "https://www.bdmbazar.com",
+        "https://bdmbazar.com",
+        "https://admin.bdmbazar.com",
+        "https://www.admin.bdmbazar.com",
         "https://bdm-bazar-admin-two.vercel.app",
         "https://bdm-bazar-customer.vercel.app",
-        "https://www.bdmbazar.com",
         "https://rokomari-customer-seven.vercel.app",
         "*"
     ],
