@@ -38,18 +38,8 @@ export type TSettings = {
   };
 
   deliveryCharge?: {
-    insideDhaka?: {
-      steadfast?: number;
-      pathao?: number;
-      redx?: number;
-      sundarban?: number;
-    };
-    outsideDhaka?: {
-      steadfast?: number;
-      pathao?: number;
-      redx?: number;
-      sundarban?: number;
-    };
+    insideDhaka?: number;
+    outsideDhaka?: number;
   };
 
   mobileMfs?: {

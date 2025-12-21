@@ -47,18 +47,8 @@ const settingsSchema = new mongoose_1.Schema({
         upay: upaySchema,
     },
     deliveryCharge: {
-        insideDhaka: {
-            steadfast: { type: Number, default: 60 },
-            pathao: { type: Number, default: 65 },
-            redx: { type: Number, default: 70 },
-            sundarban: { type: Number, default: 55 },
-        },
-        outsideDhaka: {
-            steadfast: { type: Number, default: 100 },
-            pathao: { type: Number, default: 110 },
-            redx: { type: Number, default: 120 },
-            sundarban: { type: Number, default: 90 },
-        },
+        insideDhaka: { type: Number, default: 60 },
+        outsideDhaka: { type: Number, default: 120 },
     },
     contactAndSocial: {
         address: { type: String },

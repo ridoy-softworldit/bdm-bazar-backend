@@ -188,7 +188,7 @@ const getDeliveryChargeFromDB = () => __awaiter(void 0, void 0, void 0, function
 // };
 // ✅ Update Settings
 const updateSettingsOnDB = (updatedData) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3;
     const settings = yield settings_model_1.SettingsModel.findOne();
     if (!settings)
         throw new handleAppError_1.default(404, "Settings not found!");
@@ -276,10 +276,7 @@ const updateSettingsOnDB = (updatedData) => __awaiter(void 0, void 0, void 0, fu
     }
     // ✅ Deep merge for deliveryCharge
     if (updatedData.deliveryCharge) {
-        updatedData.deliveryCharge = {
-            insideDhaka: Object.assign(Object.assign({}, (((_4 = settings.deliveryCharge) === null || _4 === void 0 ? void 0 : _4.insideDhaka) || {})), (updatedData.deliveryCharge.insideDhaka || {})),
-            outsideDhaka: Object.assign(Object.assign({}, (((_5 = settings.deliveryCharge) === null || _5 === void 0 ? void 0 : _5.outsideDhaka) || {})), (updatedData.deliveryCharge.outsideDhaka || {})),
-        };
+        updatedData.deliveryCharge = Object.assign(Object.assign({}, (settings.deliveryCharge || {})), (updatedData.deliveryCharge || {}));
     }
     // ✅ Update document
     const result = yield settings_model_1.SettingsModel.findOneAndUpdate({}, updatedData, {

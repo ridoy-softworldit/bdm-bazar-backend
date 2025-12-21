@@ -313,14 +313,8 @@ const updateSettingsOnDB = async (
   // ✅ Deep merge for deliveryCharge
   if (updatedData.deliveryCharge) {
     updatedData.deliveryCharge = {
-      insideDhaka: {
-        ...(settings.deliveryCharge?.insideDhaka || {}),
-        ...(updatedData.deliveryCharge.insideDhaka || {}),
-      },
-      outsideDhaka: {
-        ...(settings.deliveryCharge?.outsideDhaka || {}),
-        ...(updatedData.deliveryCharge.outsideDhaka || {}),
-      },
+      ...(settings.deliveryCharge || {}),
+      ...(updatedData.deliveryCharge || {}),
     };
   }
 
