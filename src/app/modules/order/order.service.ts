@@ -285,7 +285,10 @@ const updateOrderInDB = async (id: string, payload: Partial<TOrder>) => {
     throw new AppError(httpStatus.NOT_FOUND, "Order does not exists!");
   }
 
-  const result = await OrderModel.findByIdAndUpdate(id, payload, { new: true });
+  const result = await OrderModel.findByIdAndUpdate(id, payload, { 
+    new: true, 
+    runValidators: false 
+  });
   return result;
 };
 

@@ -239,7 +239,10 @@ const updateOrderInDB = (id, payload) => __awaiter(void 0, void 0, void 0, funct
     if (!isExist) {
         throw new handleAppError_1.default(http_status_1.default.NOT_FOUND, "Order does not exists!");
     }
-    const result = yield order_model_1.OrderModel.findByIdAndUpdate(id, payload, { new: true });
+    const result = yield order_model_1.OrderModel.findByIdAndUpdate(id, payload, {
+        new: true,
+        runValidators: false
+    });
     return result;
 });
 const changeOrderStatusInDB = (orderId, newStatus) => __awaiter(void 0, void 0, void 0, function* () {

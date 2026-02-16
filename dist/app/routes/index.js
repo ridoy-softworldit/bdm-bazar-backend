@@ -12,6 +12,7 @@ const brands_routes_1 = require("../modules/brands/brands.routes");
 const category_routes_1 = require("../modules/category/category.routes");
 const coupons_route_1 = require("../modules/coupons/coupons.route");
 const steadfast_routes_1 = require("../modules/courier/steadfast.routes");
+const pathao_routes_1 = require("../modules/courier/pathao.routes");
 const customer_route_1 = require("../modules/customer/customer.route");
 const dashboard_routes_1 = require("../modules/dashboard/dashboard.routes");
 const faq_route_1 = require("../modules/faq/faq.route");
@@ -152,6 +153,10 @@ const moduleRoutes = [
     {
         path: "/steadfast",
         route: steadfast_routes_1.steadfastRoutes,
+    },
+    {
+        path: "/pathao",
+        route: pathao_routes_1.pathaoRoutes,
     },
     {
         path: "/footer-settings",

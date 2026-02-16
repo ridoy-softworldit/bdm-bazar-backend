@@ -57,6 +57,8 @@ export type TOrder = {
   paymentInfo: TPaymentInfo | "cash-on";
   deliveryCharge: number;
   totalAmount: number;
+  trackingNumber?: string;
+  courierProvider?: 'steadfast' | 'pathao';
   createdAt?: Date;
   updatedAt?: Date;
 };

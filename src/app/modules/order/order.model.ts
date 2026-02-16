@@ -152,6 +152,13 @@ const orderSchema = new Schema<TOrder>(
       type: Number,
       required: true,
     },
+    trackingNumber: {
+      type: String,
+    },
+    courierProvider: {
+      type: String,
+      enum: ['steadfast', 'pathao'],
+    },
   },
   { timestamps: true }
 );

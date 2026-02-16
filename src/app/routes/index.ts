@@ -7,6 +7,7 @@ import { BrandRoutes } from "../modules/brands/brands.routes";
 import { CategoryRoutes } from "../modules/category/category.routes";
 import { CouponRoutes } from "../modules/coupons/coupons.route";
 import { steadfastRoutes } from "../modules/courier/steadfast.routes";
+import { pathaoRoutes } from "../modules/courier/pathao.routes";
 import { CustomerRoutes } from "../modules/customer/customer.route";
 import { DashboardRoutes } from "../modules/dashboard/dashboard.routes";
 import { FaqRoutes } from "../modules/faq/faq.route";
@@ -149,6 +150,10 @@ const moduleRoutes = [
   {
     path: "/steadfast",
     route: steadfastRoutes,
+  },
+  {
+    path: "/pathao",
+    route: pathaoRoutes,
   },
   {
     path: "/footer-settings",

@@ -125,5 +125,12 @@ const orderSchema = new mongoose_1.Schema({
         type: Number,
         required: true,
     },
+    trackingNumber: {
+        type: String,
+    },
+    courierProvider: {
+        type: String,
+        enum: ['steadfast', 'pathao'],
+    },
 }, { timestamps: true });
 exports.OrderModel = (0, mongoose_1.model)("order", orderSchema);
