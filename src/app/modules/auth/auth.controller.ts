@@ -26,19 +26,19 @@ const loginUser = catchAsync(async (req, res) => {
         httpOnly: true,
         secure: config.node_env === "production",
         sameSite: "none",
-        maxAge: 15 * 60 * 1000, // 15 minutes
+        maxAge: 15 * 60 * 1000,
       })
       .cookie("refreshToken", result?.refreshToken, {
         httpOnly: true,
         secure: config.node_env === "production",
         sameSite: "none",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        maxAge: 7 * 24 * 60 * 60 * 1000,
       }),
     {
       success: true,
       statusCode: httpStatus.OK,
       message: "User Logged in Successfully!",
-      data: result?.user,
+      data: { ...result?.user, accessToken: result?.accessToken },
     }
   );
 });

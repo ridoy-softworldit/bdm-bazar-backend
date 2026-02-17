@@ -20,8 +20,12 @@ const config_1 = __importDefault(require("../config"));
 const user_model_1 = require("../modules/user/user.model");
 const auth = (...requiredRoles) => {
     return (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        var _a;
-        const token = ((_a = req.headers.cookie) === null || _a === void 0 ? void 0 : _a.split("=")[1]) || "";
+        var _a, _b;
+        // Check for token in authorization header or cookie
+        const authHeader = req.headers.authorization;
+        const bearerToken = (authHeader === null || authHeader === void 0 ? void 0 : authHeader.startsWith('Bearer ')) ? authHeader.substring(7) : authHeader;
+        const cookieToken = ((_a = req.cookies) === null || _a === void 0 ? void 0 : _a.accessToken) || ((_b = req.cookies) === null || _b === void 0 ? void 0 : _b.token);
+        const token = bearerToken || cookieToken;
         if (!token) {
             throw new handleAppError_1.default(http_status_1.default.UNAUTHORIZED, "You are not authorized !");
         }

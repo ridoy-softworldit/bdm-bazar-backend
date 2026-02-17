@@ -71,15 +71,15 @@ const updateReview = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
     // if (files?.photos?.length) {
     //   updatedData.photos = files.photos.map((f) => f.path);
     // }
-    // Handle gallery images
-    if ((_a = files["photos"]) === null || _a === void 0 ? void 0 : _a.length) {
+    // Handle gallery images only if photos field is present
+    if (files && ((_a = files["photos"]) === null || _a === void 0 ? void 0 : _a.length)) {
         const newPhotosImages = files["photos"].map((f) => f.path);
         // Merge with existing gallery images (if provided)
         updatedData.photos = Array.isArray(updatedData.photos)
             ? [...updatedData.photos, ...newPhotosImages]
             : newPhotosImages;
     }
-    else if (updatedData.photos) {
+    else if (updatedData.photos !== undefined) {
         try {
             updatedData.photos = Array.isArray(updatedData.photos)
                 ? updatedData.photos

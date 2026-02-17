@@ -9,7 +9,11 @@ import { TUserRole } from "../modules/user/user.interface";
 
 const auth = (...requiredRoles: TUserRole[]) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const token = req.headers.cookie?.split("=")[1] || "";
+    // Check for token in authorization header or cookie
+    const authHeader = req.headers.authorization;
+    const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : authHeader;
+    const cookieToken = req.cookies?.accessToken || req.cookies?.token;
+    const token = bearerToken || cookieToken;
 
     if (!token) {
       throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized !");

@@ -36,18 +36,18 @@ const loginUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void
         httpOnly: true,
         secure: config_1.default.node_env === "production",
         sameSite: "none",
-        maxAge: 15 * 60 * 1000, // 15 minutes
+        maxAge: 15 * 60 * 1000,
     })
         .cookie("refreshToken", result === null || result === void 0 ? void 0 : result.refreshToken, {
         httpOnly: true,
         secure: config_1.default.node_env === "production",
         sameSite: "none",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        maxAge: 7 * 24 * 60 * 60 * 1000,
     }), {
         success: true,
         statusCode: http_status_1.default.OK,
         message: "User Logged in Successfully!",
-        data: result === null || result === void 0 ? void 0 : result.user,
+        data: Object.assign(Object.assign({}, result === null || result === void 0 ? void 0 : result.user), { accessToken: result === null || result === void 0 ? void 0 : result.accessToken }),
     });
 }));
 const loginUserUsingProvider = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
