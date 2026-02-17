@@ -9,7 +9,7 @@ export const userRoles = [
 
 export const possibleGenders = ["male", "female", "other"];
 
-export const userStatus = ["active", "banned"];
+export const userStatus = ["active", "inActive", "banned"];
 
 export const userRole = {
   customer: "customer",

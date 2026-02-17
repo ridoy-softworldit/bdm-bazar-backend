@@ -10,7 +10,9 @@ const handleDuplicateError_1 = __importDefault(require("../errors/handleDuplicat
 const handleCastError_1 = __importDefault(require("../errors/handleCastError"));
 const handleValidationError_1 = __importDefault(require("../errors/handleValidationError"));
 const handleZodError_1 = __importDefault(require("../errors/handleZodError"));
+const axios_1 = __importDefault(require("axios"));
 const globalErrorHandler = (error, req, res, next) => {
+    var _a, _b, _c, _d, _e, _f;
     //default values
     let statusCode = error.statusCode || 500;
     let message = error.message || "something went wrong!";
@@ -20,7 +22,18 @@ const globalErrorHandler = (error, req, res, next) => {
             message: "Something Went Wrong",
         },
     ];
-    if (error instanceof zod_1.ZodError) {
+    // Handle Axios errors from external APIs (like Steadfast)
+    if (axios_1.default.isAxiosError(error)) {
+        statusCode = ((_a = error.response) === null || _a === void 0 ? void 0 : _a.status) || 500;
+        message = ((_c = (_b = error.response) === null || _b === void 0 ? void 0 : _b.data) === null || _c === void 0 ? void 0 : _c.message) || error.message || "External API request failed";
+        errorSources = [
+            {
+                path: ((_d = error.config) === null || _d === void 0 ? void 0 : _d.url) || "",
+                message: ((_f = (_e = error.response) === null || _e === void 0 ? void 0 : _e.data) === null || _f === void 0 ? void 0 : _f.message) || error.message,
+            },
+        ];
+    }
+    else if (error instanceof zod_1.ZodError) {
         const simplifiedError = (0, handleZodError_1.default)(error);
         statusCode = simplifiedError === null || simplifiedError === void 0 ? void 0 : simplifiedError.statusCode;
         message = simplifiedError === null || simplifiedError === void 0 ? void 0 : simplifiedError.message;

@@ -45,14 +45,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getReturnRequestsController = exports.getReturnRequestController = exports.createReturnRequestController = exports.getCurrentBalanceController = exports.getStatusByTrackingCodeController = exports.getStatusByConsignmentIdController = exports.getStatusByInvoiceController = exports.bulkCreateOrderController = exports.createOrderController = void 0;
+exports.getPoliceStationsController = exports.getPaymentByIdController = exports.getPaymentsController = exports.getReturnRequestsController = exports.getReturnRequestController = exports.createReturnRequestController = exports.getCurrentBalanceController = exports.getStatusByTrackingCodeController = exports.getStatusByConsignmentIdController = exports.getStatusByInvoiceController = exports.bulkCreateOrderController = exports.createOrderController = void 0;
 const http_status_1 = __importDefault(require("http-status"));
 const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const steadfastService = __importStar(require("./steadfast.service"));
 // 🔹 Create Single Order
 exports.createOrderController = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('Received order data:', req.body);
     const result = yield steadfastService.createOrder(req.body);
+    console.log('Steadfast API result:', result);
     (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: http_status_1.default.CREATED,
@@ -133,6 +135,36 @@ exports.getReturnRequestsController = (0, catchAsync_1.default)((req, res) => __
         success: true,
         statusCode: http_status_1.default.OK,
         message: "All return requests fetched successfully",
+        data: result,
+    });
+}));
+// 🔹 Get Payments
+exports.getPaymentsController = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield steadfastService.getPayments();
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_1.default.OK,
+        message: "Payments fetched successfully",
+        data: result,
+    });
+}));
+// 🔹 Get Single Payment with Consignments
+exports.getPaymentByIdController = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield steadfastService.getPaymentById(req.params.paymentId);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_1.default.OK,
+        message: "Payment details fetched successfully",
+        data: result,
+    });
+}));
+// 🔹 Get Police Stations
+exports.getPoliceStationsController = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield steadfastService.getPoliceStations();
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_1.default.OK,
+        message: "Police stations fetched successfully",
         data: result,
     });
 }));

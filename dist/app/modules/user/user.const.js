@@ -10,7 +10,7 @@ exports.userRoles = [
     "super-admin",
 ];
 exports.possibleGenders = ["male", "female", "other"];
-exports.userStatus = ["active", "banned"];
+exports.userStatus = ["active", "inActive", "banned"];
 exports.userRole = {
     customer: "customer",
     admin: "admin",

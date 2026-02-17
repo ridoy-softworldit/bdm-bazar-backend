@@ -16,4 +16,10 @@ router.post("/logout/:id", auth_controller_1.AuthController.logOutUser);
 router.post("/login/provider", (0, validateRequest_1.default)(auth_validations_1.AuthValidations.loginUserUsingProvider), auth_controller_1.AuthController.loginUserUsingProvider);
 // Refresh access token using refresh token
 router.post("/refresh-token", auth_controller_1.AuthController.refreshToken);
+// Change password
+router.post("/change-password", (0, validateRequest_1.default)(auth_validations_1.AuthValidations.changePassword), auth_controller_1.AuthController.changePassword);
+// Forgot password
+router.post("/forgot-password", (0, validateRequest_1.default)(auth_validations_1.AuthValidations.forgotPassword), auth_controller_1.AuthController.forgotPassword);
+// Reset password
+router.post("/reset-password", (0, validateRequest_1.default)(auth_validations_1.AuthValidations.resetPassword), auth_controller_1.AuthController.resetPassword);
 exports.AuthRoutes = router;

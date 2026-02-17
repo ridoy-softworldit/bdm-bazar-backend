@@ -14,4 +14,9 @@ export default {
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
   CLOUDINARY_URL: process.env.CLOUDINARY_URL,
+  email_host: process.env.EMAIL_HOST,
+  email_port: process.env.EMAIL_PORT,
+  email_user: process.env.EMAIL_USER,
+  email_pass: process.env.EMAIL_PASS,
+  frontend_url: process.env.FRONTEND_URL,
 };

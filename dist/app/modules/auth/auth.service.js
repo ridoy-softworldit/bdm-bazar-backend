@@ -16,9 +16,11 @@ exports.AuthServices = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const http_status_1 = __importDefault(require("http-status"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const crypto_1 = __importDefault(require("crypto"));
 const config_1 = __importDefault(require("../../config"));
 const handleAppError_1 = __importDefault(require("../../errors/handleAppError"));
 const user_model_1 = require("../user/user.model");
+const sendEmail_1 = require("../../utils/sendEmail");
 // Helper to generate tokens
 const generateTokens = (payload) => {
     const accessToken = jsonwebtoken_1.default.sign(payload, config_1.default.jwt_access_secret, {
@@ -89,10 +91,71 @@ const logoutUserFromDB = (id) => __awaiter(void 0, void 0, void 0, function* () 
     yield user_model_1.UserModel.findByIdAndUpdate(id, { status: "inActive" }, { new: true });
     return {};
 });
+// Change password
+const changePasswordInDB = (userId, oldPassword, newPassword) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = yield user_model_1.UserModel.findById(userId);
+    if (!user) {
+        throw new handleAppError_1.default(http_status_1.default.NOT_FOUND, "User not found!");
+    }
+    const isPasswordMatched = yield bcrypt_1.default.compare(oldPassword, user.password);
+    if (!isPasswordMatched) {
+        throw new handleAppError_1.default(http_status_1.default.UNAUTHORIZED, "Old password is incorrect!");
+    }
+    const hashedPassword = yield bcrypt_1.default.hash(newPassword, Number(config_1.default.bcrypt_salt_rounds));
+    yield user_model_1.UserModel.findByIdAndUpdate(userId, { password: hashedPassword });
+    return {};
+});
+// Forgot password
+const forgotPasswordInDB = (email) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = yield user_model_1.UserModel.findOne({ email });
+    if (!user) {
+        throw new handleAppError_1.default(http_status_1.default.NOT_FOUND, "User not found!");
+    }
+    const resetToken = crypto_1.default.randomBytes(32).toString("hex");
+    const hashedToken = crypto_1.default
+        .createHash("sha256")
+        .update(resetToken)
+        .digest("hex");
+    yield user_model_1.UserModel.findByIdAndUpdate(user._id, {
+        resetPasswordToken: hashedToken,
+        resetPasswordExpires: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+    });
+    const resetUrl = `${config_1.default.frontend_url}/auth/reset-password?token=${resetToken}`;
+    const html = `
+    <h2>Password Reset Request</h2>
+    <p>You requested a password reset. Click the link below to reset your password:</p>
+    <a href="${resetUrl}">${resetUrl}</a>
+    <p>This link will expire in 10 minutes.</p>
+    <p>If you didn't request this, please ignore this email.</p>
+  `;
+    yield (0, sendEmail_1.sendEmail)(email, "Password Reset Request", html);
+    return {};
+});
+// Reset password
+const resetPasswordInDB = (token, newPassword) => __awaiter(void 0, void 0, void 0, function* () {
+    const hashedToken = crypto_1.default.createHash("sha256").update(token).digest("hex");
+    const user = yield user_model_1.UserModel.findOne({
+        resetPasswordToken: hashedToken,
+        resetPasswordExpires: { $gt: new Date() },
+    });
+    if (!user) {
+        throw new handleAppError_1.default(http_status_1.default.BAD_REQUEST, "Invalid or expired reset token!");
+    }
+    const hashedPassword = yield bcrypt_1.default.hash(newPassword, Number(config_1.default.bcrypt_salt_rounds));
+    yield user_model_1.UserModel.findByIdAndUpdate(user._id, {
+        password: hashedPassword,
+        resetPasswordToken: undefined,
+        resetPasswordExpires: undefined,
+    });
+    return {};
+});
 exports.AuthServices = {
     registerUserOnDB,
     loginUserFromDB,
     loginUserUsingProviderFromDB,
     refreshAccessToken,
     logoutUserFromDB,
+    changePasswordInDB,
+    forgotPasswordInDB,
+    resetPasswordInDB,
 };

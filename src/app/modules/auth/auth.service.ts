@@ -1,10 +1,12 @@
 import bcrypt from "bcrypt";
 import httpStatus from "http-status";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import config from "../../config";
 import AppError from "../../errors/handleAppError";
 import { UserModel } from "../user/user.model";
 import { TAuth, TExternalProviderAuth } from "./auth.interface";
+import { sendEmail } from "../../utils/sendEmail";
 
 // Helper to generate tokens
 const generateTokens = (payload: object) => {
@@ -117,10 +119,105 @@ const logoutUserFromDB = async (id: string) => {
   return {};
 };
 
+// Change password
+const changePasswordInDB = async (
+  userId: string,
+  oldPassword: string,
+  newPassword: string
+) => {
+  const user = await UserModel.findById(userId);
+
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, "User not found!");
+  }
+
+  const isPasswordMatched = await bcrypt.compare(oldPassword, user.password);
+
+  if (!isPasswordMatched) {
+    throw new AppError(httpStatus.UNAUTHORIZED, "Old password is incorrect!");
+  }
+
+  const hashedPassword = await bcrypt.hash(
+    newPassword,
+    Number(config.bcrypt_salt_rounds)
+  );
+
+  await UserModel.findByIdAndUpdate(userId, { password: hashedPassword });
+
+  return {};
+};
+
+// Forgot password
+const forgotPasswordInDB = async (email: string) => {
+  const user = await UserModel.findOne({ email });
+
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, "User not found!");
+  }
+
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  await UserModel.findByIdAndUpdate(user._id, {
+    resetPasswordToken: hashedToken,
+    resetPasswordExpires: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+  });
+
+  const resetUrl = `${config.frontend_url}/auth/reset-password?token=${resetToken}`;
+
+  const html = `
+    <h2>Password Reset Request</h2>
+    <p>You requested a password reset. Click the link below to reset your password:</p>
+    <a href="${resetUrl}">${resetUrl}</a>
+    <p>This link will expire in 10 minutes.</p>
+    <p>If you didn't request this, please ignore this email.</p>
+  `;
+
+  await sendEmail(email, "Password Reset Request", html);
+
+  return {};
+};
+
+// Reset password
+const resetPasswordInDB = async (token: string, newPassword: string) => {
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  const user = await UserModel.findOne({
+    resetPasswordToken: hashedToken,
+    resetPasswordExpires: { $gt: new Date() },
+  });
+
+  if (!user) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Invalid or expired reset token!"
+    );
+  }
+
+  const hashedPassword = await bcrypt.hash(
+    newPassword,
+    Number(config.bcrypt_salt_rounds)
+  );
+
+  await UserModel.findByIdAndUpdate(user._id, {
+    password: hashedPassword,
+    resetPasswordToken: undefined,
+    resetPasswordExpires: undefined,
+  });
+
+  return {};
+};
+
 export const AuthServices = {
   registerUserOnDB,
   loginUserFromDB,
   loginUserUsingProviderFromDB,
   refreshAccessToken,
   logoutUserFromDB,
+  changePasswordInDB,
+  forgotPasswordInDB,
+  resetPasswordInDB,
 };

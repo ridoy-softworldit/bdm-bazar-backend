@@ -7,6 +7,8 @@ import handleDuplicateError from "../errors/handleDuplicateError";
 import handleCastError from "../errors/handleCastError";
 import handleValidationError from "../errors/handleValidationError";
 import handleZodError from "../errors/handleZodError";
+import axios from "axios";
+
 const globalErrorHandler: ErrorRequestHandler = (error, req, res, next) => {
   //default values
   let statusCode = error.statusCode || 500;
@@ -19,7 +21,17 @@ const globalErrorHandler: ErrorRequestHandler = (error, req, res, next) => {
     },
   ];
 
-  if (error instanceof ZodError) {
+  // Handle Axios errors from external APIs (like Steadfast)
+  if (axios.isAxiosError(error)) {
+    statusCode = error.response?.status || 500;
+    message = error.response?.data?.message || error.message || "External API request failed";
+    errorSources = [
+      {
+        path: error.config?.url || "",
+        message: error.response?.data?.message || error.message,
+      },
+    ];
+  } else if (error instanceof ZodError) {
     const simplifiedError = handleZodError(error);
 
     statusCode = simplifiedError?.statusCode;

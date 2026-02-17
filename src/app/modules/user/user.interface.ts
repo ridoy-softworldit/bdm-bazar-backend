@@ -8,9 +8,9 @@ type TUserRoles =
   | "admin-staff"
   | "super-admin";
 
-type TGender = "male" | "fmale" | "other";
+type TGender = "male" | "female" | "other";
 
-type TUserStatus = "active" | "banned";
+type TUserStatus = "active" | "inActive" | "banned";
 
 export type TUser = {
   name: string;
@@ -25,6 +25,8 @@ export type TUser = {
   walletPoint?: number;
   socials?: string[];
   cardInfo?: null;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
 };
 
 export type TUserRole = keyof typeof userRole;

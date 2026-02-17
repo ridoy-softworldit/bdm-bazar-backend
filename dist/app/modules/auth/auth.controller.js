@@ -118,10 +118,43 @@ const logOutUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, voi
         data: result,
     });
 }));
+const changePassword = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { userId, oldPassword, newPassword } = req.body;
+    yield auth_service_1.AuthServices.changePasswordInDB(userId, oldPassword, newPassword);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_1.default.OK,
+        message: "Password changed successfully!",
+        data: null,
+    });
+}));
+const forgotPassword = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { email } = req.body;
+    yield auth_service_1.AuthServices.forgotPasswordInDB(email);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_1.default.OK,
+        message: "Password reset link sent to your email!",
+        data: null,
+    });
+}));
+const resetPassword = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { token, newPassword } = req.body;
+    yield auth_service_1.AuthServices.resetPasswordInDB(token, newPassword);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_1.default.OK,
+        message: "Password reset successfully!",
+        data: null,
+    });
+}));
 exports.AuthController = {
     registerUser,
     loginUser,
     loginUserUsingProvider,
     refreshToken,
     logOutUser,
+    changePassword,
+    forgotPassword,
+    resetPassword,
 };

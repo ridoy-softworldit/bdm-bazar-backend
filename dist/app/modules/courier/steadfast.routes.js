@@ -16,4 +16,7 @@ router.get("/balance", steadfast_controller_1.getCurrentBalanceController);
 router.post("/return-request", steadfast_controller_1.createReturnRequestController);
 router.get("/return-request/:id", steadfast_controller_1.getReturnRequestController);
 router.get("/return-requests", steadfast_controller_1.getReturnRequestsController);
+router.get("/payments", steadfast_controller_1.getPaymentsController);
+router.get("/payments/:paymentId", steadfast_controller_1.getPaymentByIdController);
+router.get("/police-stations", steadfast_controller_1.getPoliceStationsController);
 exports.steadfastRoutes = router;

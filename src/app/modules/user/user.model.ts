@@ -60,6 +60,12 @@ const userSchema = new Schema<TUser>(
       type: Object,
       default: null,
     },
+    resetPasswordToken: {
+      type: String,
+    },
+    resetPasswordExpires: {
+      type: Date,
+    },
   },
   {
     timestamps: true, // Automatically add createdAt and updatedAt fields

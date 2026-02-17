@@ -4,6 +4,9 @@ import {
   createOrderController,
   createReturnRequestController,
   getCurrentBalanceController,
+  getPaymentByIdController,
+  getPaymentsController,
+  getPoliceStationsController,
   getReturnRequestController,
   getReturnRequestsController,
   getStatusByConsignmentIdController,
@@ -25,5 +28,9 @@ router.get("/balance", getCurrentBalanceController);
 router.post("/return-request", createReturnRequestController);
 router.get("/return-request/:id", getReturnRequestController);
 router.get("/return-requests", getReturnRequestsController);
+
+router.get("/payments", getPaymentsController);
+router.get("/payments/:paymentId", getPaymentByIdController);
+router.get("/police-stations", getPoliceStationsController);
 
 export const steadfastRoutes = router;

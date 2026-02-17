@@ -5,7 +5,9 @@ import * as steadfastService from "./steadfast.service";
 
 // 🔹 Create Single Order
 export const createOrderController = catchAsync(async (req, res) => {
+  console.log('Received order data:', req.body);
   const result = await steadfastService.createOrder(req.body);
+  console.log('Steadfast API result:', result);
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.CREATED,
@@ -102,6 +104,39 @@ export const getReturnRequestsController = catchAsync(async (req, res) => {
     success: true,
     statusCode: httpStatus.OK,
     message: "All return requests fetched successfully",
+    data: result,
+  });
+});
+
+// 🔹 Get Payments
+export const getPaymentsController = catchAsync(async (req, res) => {
+  const result = await steadfastService.getPayments();
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Payments fetched successfully",
+    data: result,
+  });
+});
+
+// 🔹 Get Single Payment with Consignments
+export const getPaymentByIdController = catchAsync(async (req, res) => {
+  const result = await steadfastService.getPaymentById(req.params.paymentId);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Payment details fetched successfully",
+    data: result,
+  });
+});
+
+// 🔹 Get Police Stations
+export const getPoliceStationsController = catchAsync(async (req, res) => {
+  const result = await steadfastService.getPoliceStations();
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Police stations fetched successfully",
     data: result,
   });
 });

@@ -30,4 +30,25 @@ router.post(
 // Refresh access token using refresh token
 router.post("/refresh-token", AuthController.refreshToken);
 
+// Change password
+router.post(
+  "/change-password",
+  validateRequest(AuthValidations.changePassword),
+  AuthController.changePassword
+);
+
+// Forgot password
+router.post(
+  "/forgot-password",
+  validateRequest(AuthValidations.forgotPassword),
+  AuthController.forgotPassword
+);
+
+// Reset password
+router.post(
+  "/reset-password",
+  validateRequest(AuthValidations.resetPassword),
+  AuthController.resetPassword
+);
+
 export const AuthRoutes = router;
