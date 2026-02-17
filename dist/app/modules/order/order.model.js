@@ -104,6 +104,11 @@ const orderInfoSchema = new mongoose_1.Schema({
 }, { _id: false });
 // Main Order Schema
 const orderSchema = new mongoose_1.Schema({
+    orderId: {
+        type: String,
+        unique: true,
+        required: true,
+    },
     orderInfo: {
         type: [orderInfoSchema],
         required: true,

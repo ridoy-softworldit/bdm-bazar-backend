@@ -52,6 +52,7 @@ export type TOrderInfo = {
 };
 
 export type TOrder = {
+  orderId?: string;
   orderInfo: TOrderInfo[];
   customerInfo: TCustomerInfo;
   paymentInfo: TPaymentInfo | "cash-on";

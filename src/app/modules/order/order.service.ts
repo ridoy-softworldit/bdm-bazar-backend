@@ -6,6 +6,7 @@ import { ProductModel } from "../product/product.model";
 import { OrderSearchableFields } from "./order.consts";
 import { TOrder } from "./order.interface";
 import { OrderModel } from "./order.model";
+import { OrderCounterModel } from "./order.counter.model";
 
 const getAllOrdersFromDB = async (query: Record<string, unknown>) => {
   const orderQuery = new QueryBuilder(OrderModel.find(), query)
@@ -269,7 +270,28 @@ const getSingleOrderFromDB = async (id: string) => {
   return result;
 };
 
+const generateOrderId = async (): Promise<string> => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const dateKey = `${year}${month}${day}`;
+
+  // Find or create counter for today
+  const counter = await OrderCounterModel.findOneAndUpdate(
+    { date: dateKey },
+    { $inc: { count: 1 } },
+    { upsert: true, new: true }
+  );
+
+  const serialNumber = String(counter.count).padStart(4, '0');
+  return `${dateKey}-${serialNumber}`;
+};
+
 const createOrderIntoDB = async (payload: TOrder) => {
+  // Generate custom order ID
+  payload.orderId = await generateOrderId();
+  
   if (payload) {
     payload.orderInfo.forEach((order) => (order.trackingNumber = nanoid()));
   }

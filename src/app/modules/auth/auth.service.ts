@@ -49,11 +49,16 @@ const loginUserFromDB = async (payload: TAuth) => {
     isUserExists?._id,
     { status: "active" },
     { new: true }
-  );
+  ).select("-password");
 
   const jwtPayload = {
-    email: isUserExists?.email,
-    role: isUserExists?.role,
+    _id: user?._id,
+    id: user?._id,
+    name: user?.name,
+    email: user?.email,
+    role: user?.role,
+    gender: user?.gender,
+    walletPoint: user?.walletPoint,
   };
 
   const { accessToken, refreshToken } = generateTokens(jwtPayload);
@@ -76,8 +81,13 @@ const loginUserUsingProviderFromDB = async (payload: TExternalProviderAuth) => {
   }
 
   const jwtPayload = {
+    _id: user?._id,
+    id: user?._id,
+    name: user?.name,
     email: user?.email,
     role: user?.role,
+    gender: user?.gender,
+    walletPoint: user?.walletPoint,
   };
 
   const { accessToken, refreshToken } = generateTokens(jwtPayload);

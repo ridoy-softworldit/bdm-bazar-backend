@@ -47,10 +47,15 @@ const loginUserFromDB = (payload) => __awaiter(void 0, void 0, void 0, function*
     if (!isPasswordMatched) {
         throw new handleAppError_1.default(http_status_1.default.UNAUTHORIZED, "Wrong Credentials!");
     }
-    const user = yield user_model_1.UserModel.findByIdAndUpdate(isUserExists === null || isUserExists === void 0 ? void 0 : isUserExists._id, { status: "active" }, { new: true });
+    const user = yield user_model_1.UserModel.findByIdAndUpdate(isUserExists === null || isUserExists === void 0 ? void 0 : isUserExists._id, { status: "active" }, { new: true }).select("-password");
     const jwtPayload = {
-        email: isUserExists === null || isUserExists === void 0 ? void 0 : isUserExists.email,
-        role: isUserExists === null || isUserExists === void 0 ? void 0 : isUserExists.role,
+        _id: user === null || user === void 0 ? void 0 : user._id,
+        id: user === null || user === void 0 ? void 0 : user._id,
+        name: user === null || user === void 0 ? void 0 : user.name,
+        email: user === null || user === void 0 ? void 0 : user.email,
+        role: user === null || user === void 0 ? void 0 : user.role,
+        gender: user === null || user === void 0 ? void 0 : user.gender,
+        walletPoint: user === null || user === void 0 ? void 0 : user.walletPoint,
     };
     const { accessToken, refreshToken } = generateTokens(jwtPayload);
     return { user, accessToken, refreshToken };
@@ -65,8 +70,13 @@ const loginUserUsingProviderFromDB = (payload) => __awaiter(void 0, void 0, void
         user = yield user_model_1.UserModel.findByIdAndUpdate(user._id, { status: "active" }, { new: true });
     }
     const jwtPayload = {
+        _id: user === null || user === void 0 ? void 0 : user._id,
+        id: user === null || user === void 0 ? void 0 : user._id,
+        name: user === null || user === void 0 ? void 0 : user.name,
         email: user === null || user === void 0 ? void 0 : user.email,
         role: user === null || user === void 0 ? void 0 : user.role,
+        gender: user === null || user === void 0 ? void 0 : user.gender,
+        walletPoint: user === null || user === void 0 ? void 0 : user.walletPoint,
     };
     const { accessToken, refreshToken } = generateTokens(jwtPayload);
     return { user, accessToken, refreshToken };

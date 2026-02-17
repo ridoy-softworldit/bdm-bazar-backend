@@ -131,6 +131,11 @@ const orderInfoSchema = new Schema<TOrderInfo>(
 // Main Order Schema
 const orderSchema = new Schema<TOrder>(
   {
+    orderId: {
+      type: String,
+      unique: true,
+      required: true,
+    },
     orderInfo: {
       type: [orderInfoSchema],
       required: true,

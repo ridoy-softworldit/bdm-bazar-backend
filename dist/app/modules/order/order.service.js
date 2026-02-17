@@ -20,6 +20,7 @@ const handleAppError_1 = __importDefault(require("../../errors/handleAppError"))
 const product_model_1 = require("../product/product.model");
 const order_consts_1 = require("./order.consts");
 const order_model_1 = require("./order.model");
+const order_counter_model_1 = require("./order.counter.model");
 const getAllOrdersFromDB = (query) => __awaiter(void 0, void 0, void 0, function* () {
     const orderQuery = new QueryBuilder_1.default(order_model_1.OrderModel.find(), query)
         .search(order_consts_1.OrderSearchableFields)
@@ -227,7 +228,20 @@ const getSingleOrderFromDB = (id) => __awaiter(void 0, void 0, void 0, function*
     }
     return result;
 });
+const generateOrderId = () => __awaiter(void 0, void 0, void 0, function* () {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const dateKey = `${year}${month}${day}`;
+    // Find or create counter for today
+    const counter = yield order_counter_model_1.OrderCounterModel.findOneAndUpdate({ date: dateKey }, { $inc: { count: 1 } }, { upsert: true, new: true });
+    const serialNumber = String(counter.count).padStart(4, '0');
+    return `${dateKey}-${serialNumber}`;
+});
 const createOrderIntoDB = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+    // Generate custom order ID
+    payload.orderId = yield generateOrderId();
     if (payload) {
         payload.orderInfo.forEach((order) => (order.trackingNumber = (0, nanoid_1.nanoid)()));
     }
