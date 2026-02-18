@@ -22,4 +22,7 @@ exports.default = {
     email_user: process.env.EMAIL_USER,
     email_pass: process.env.EMAIL_PASS,
     frontend_url: process.env.FRONTEND_URL,
+    GOOGLE_DRIVE_FOLDER_ID: process.env.GOOGLE_DRIVE_FOLDER_ID,
+    GOOGLE_SERVICE_ACCOUNT_KEY_FILE: process.env.GOOGLE_SERVICE_ACCOUNT_KEY_FILE,
+    GOOGLE_DELEGATED_USER_EMAIL: process.env.GOOGLE_DELEGATED_USER_EMAIL,
 };

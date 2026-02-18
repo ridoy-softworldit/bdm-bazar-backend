@@ -2,6 +2,7 @@ import httpStatus from "http-status";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { productServices } from "./product.service";
+import { cloudinaryUpload } from "../../config/cloudinary.config";
 
 const getAllProduct = catchAsync(async (req, res) => {
   const result = await productServices.getAllProductFromDB(req.query);
@@ -70,28 +71,54 @@ const createProduct = catchAsync(async (req, res) => {
   const files =
     (req.files as { [fieldname: string]: Express.Multer.File[] }) || {};
 
-  const productData = {
-    ...req.body,
-    featuredImg:
-      files["featuredImgFile"]?.[0]?.path || req.body.featuredImg || "",
-    gallery: files["galleryImagesFiles"]
-      ? files["galleryImagesFiles"].map((f) => f.path)
-      : req.body.gallery || [],
-    previewImg: files["previewImgFile"]
-      ? files["previewImgFile"].map((f) => f.path)
-      : req.body.previewImg || [],
+  // req.body is already parsed by validateRequest middleware
+  const parsedData = req.body;
+
+  // Upload images to Cloudinary
+  const uploadToCloudinary = (buffer: Buffer): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      cloudinaryUpload.uploader.upload_stream(
+        { resource_type: 'auto' },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result!.secure_url);
+        }
+      ).end(buffer);
+    });
   };
 
-  // ✅ Handle author images dynamically
-  // if (req.body.bookInfo?.specification?.authors) {
-  //   productData.bookInfo.specification.authors =
-  //     req.body.bookInfo?.specification?.authors.map(
-  //       (author: any, index: number) => ({
-  //         ...author,
-  //         image: files[`authorImage_${index}`]?.[0]?.path || author.image || "",
-  //       })
-  //     );
-  // }
+  let featuredImg = parsedData.featuredImg || "";
+  if (files["featuredImgFile"]?.[0]) {
+    featuredImg = await uploadToCloudinary(files["featuredImgFile"][0].buffer);
+  }
+
+  let gallery: string[] = parsedData.gallery || [];
+  if (files["galleryImagesFiles"]?.length) {
+    gallery = await Promise.all(
+      files["galleryImagesFiles"].map(f => uploadToCloudinary(f.buffer))
+    );
+  }
+
+  let previewImg: string[] = parsedData.previewImg || [];
+  if (files["previewImgFile"]?.length) {
+    previewImg = await Promise.all(
+      files["previewImgFile"].map(f => uploadToCloudinary(f.buffer))
+    );
+  }
+
+  // PDF link handling (only for book products)
+  let pdfUrl = parsedData.previewPdf || undefined;
+  if (pdfUrl && pdfUrl.includes('/view')) {
+    pdfUrl = pdfUrl.replace('/view?usp=sharing', '/preview').replace('/view', '/preview');
+  }
+
+  const productData = {
+    ...parsedData,
+    featuredImg,
+    gallery,
+    previewImg,
+    previewPdf: pdfUrl,
+  };
 
   const result = await productServices.createProductOnDB(productData);
 
@@ -143,59 +170,34 @@ const updateProduct = catchAsync(async (req, res) => {
   const files =
     (req.files as { [fieldname: string]: Express.Multer.File[] }) || {};
 
+  // req.body is already parsed by validateRequest middleware
+  const parsedData = req.body;
+
   const updatedData: any = {
-    ...req.body,
+    ...parsedData,
   };
 
   // ✅ Safely handle featured image
   if (files["featuredImgFile"]?.[0]?.path) {
     updatedData.featuredImg = files["featuredImgFile"][0].path;
-  } else if (req.body.featuredImg) {
-    updatedData.featuredImg = req.body.featuredImg;
+  } else if (parsedData.featuredImg) {
+    updatedData.featuredImg = parsedData.featuredImg;
   }
 
-  // ✅ Safely handle gallery
-  // if (files["galleryImagesFiles"]?.length) {
-  //   updatedData.gallery = files["galleryImagesFiles"].map((f) => f.path);
-  // } else if (req.body.gallery) {
-  //   // Handle JSON array (stringified or real array)
-  //   try {
-  //     updatedData.gallery = Array.isArray(req.body.gallery)
-  //       ? req.body.gallery
-  //       : JSON.parse(req.body.gallery);
-  //   } catch {
-  //     updatedData.gallery = [req.body.gallery];
-  //   }
-  // }
-
-  // // ✅ Safely handle preview images
-  // if (files["previewImgFile"]?.length) {
-  //   updatedData.previewImg = files["previewImgFile"].map((f) => f.path);
-  // } else if (req.body.previewImg) {
-  //   try {
-  //     updatedData.previewImg = Array.isArray(req.body.previewImg)
-  //       ? req.body.previewImg
-  //       : JSON.parse(req.body.previewImg);
-  //   } catch {
-  //     updatedData.previewImg = [req.body.previewImg];
-  //   }
-  // }
-
-  // // ✅ Handle author images update
-  // if (updatedData.bookInfo?.specification?.authors) {
-  //   updatedData.bookInfo.specification.authors =
-  //     updatedData.bookInfo.specification.authors.map(
-  //       (author: any, index: number) => ({
-  //         ...author,
-  //         image: files[`authorImage_${index}`]?.[0]?.path || author.image || "",
-  //       })
-  //     );
-  // }
+  // ✅ Safely handle PDF preview
+  if (parsedData.previewPdf) {
+    let pdfUrl = parsedData.previewPdf;
+    if (pdfUrl.includes('/view')) {
+      pdfUrl = pdfUrl.replace('/view?usp=sharing', '/preview').replace('/view', '/preview');
+    }
+    updatedData.previewPdf = pdfUrl;
+  } else if (parsedData.previewPdf === null || parsedData.previewPdf === '') {
+    updatedData.previewPdf = undefined;
+  }
 
   // Handle gallery images
   if (files["galleryImagesFiles"]?.length) {
     const newGalleryImages = files["galleryImagesFiles"].map((f) => f.path);
-    // Merge with existing gallery images (if provided)
     updatedData.gallery = Array.isArray(updatedData.gallery)
       ? [...updatedData.gallery, ...newGalleryImages]
       : newGalleryImages;
@@ -212,7 +214,6 @@ const updateProduct = catchAsync(async (req, res) => {
   // Handle preview images
   if (files["previewImgFile"]?.length) {
     const newPreviewImages = files["previewImgFile"].map((f) => f.path);
-    // Merge with existing preview images (if provided)
     updatedData.previewImg = Array.isArray(updatedData.previewImg)
       ? [...updatedData.previewImg, ...newPreviewImages]
       : newPreviewImages;

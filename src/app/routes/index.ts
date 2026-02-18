@@ -16,6 +16,7 @@ import { dynamicPagesRoutes } from "../modules/dynamic-pages/dynamic-pages.route
 import { OrderRoutes } from "../modules/order/order.route";
 import { OrderStatusRoutes } from "../modules/orderStatus/orderStatus.route";
 import { ProductRoutes } from "../modules/product/product.routes";
+import { PdfRoutes } from "../modules/pdf/pdf.routes";
 import { reviewRoutes } from "../modules/review/review.routes";
 import { SalesHistoryRoutes } from "../modules/salesHistory/salesHistory.routes";
 import { settingsRoutes } from "../modules/settings/settings.routes";
@@ -162,6 +163,10 @@ const moduleRoutes = [
   {
     path: "/dynamic-pages",
     route: dynamicPagesRoutes,
+  },
+  {
+    path: "/",
+    route: PdfRoutes,
   },
 ];
 

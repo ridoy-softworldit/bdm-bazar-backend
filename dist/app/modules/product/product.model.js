@@ -117,6 +117,7 @@ const productSchema = new mongoose_1.Schema({
     previewImg: [String],
     gallery: [String],
     video: String,
+    previewPdf: String,
     categoryAndTags: { type: categoryAndTagsSchema, required: true },
     description: { type: descriptionSchema, required: true },
     productType: { type: String, enum: ["simple", "variable"], required: true },

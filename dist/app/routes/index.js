@@ -21,6 +21,7 @@ const dynamic_pages_routes_1 = require("../modules/dynamic-pages/dynamic-pages.r
 const order_route_1 = require("../modules/order/order.route");
 const orderStatus_route_1 = require("../modules/orderStatus/orderStatus.route");
 const product_routes_1 = require("../modules/product/product.routes");
+const pdf_routes_1 = require("../modules/pdf/pdf.routes");
 const review_routes_1 = require("../modules/review/review.routes");
 const salesHistory_routes_1 = require("../modules/salesHistory/salesHistory.routes");
 const settings_routes_1 = require("../modules/settings/settings.routes");
@@ -165,6 +166,10 @@ const moduleRoutes = [
     {
         path: "/dynamic-pages",
         route: dynamic_pages_routes_1.dynamicPagesRoutes,
+    },
+    {
+        path: "/",
+        route: pdf_routes_1.PdfRoutes,
     },
 ];
 moduleRoutes.forEach((route) => router.use(route === null || route === void 0 ? void 0 : route.path, route === null || route === void 0 ? void 0 : route.route));

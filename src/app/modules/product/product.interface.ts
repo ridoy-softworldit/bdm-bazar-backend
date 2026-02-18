@@ -87,6 +87,7 @@ export type TProduct = {
   previewImg?: string[];
   gallery?: string[];
   video?: string;
+  previewPdf?: string;
   categoryAndTags: TCategoriesAndTags;
   description: TDescription;
   productType: "simple" | "variable";

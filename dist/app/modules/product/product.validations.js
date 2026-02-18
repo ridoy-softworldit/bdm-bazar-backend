@@ -101,6 +101,7 @@ exports.createProductZodSchema = zod_1.z.object({
     previewImg: zod_1.z.array(zod_1.z.string()).optional(),
     gallery: zod_1.z.array(zod_1.z.string()).optional(),
     video: zod_1.z.string().optional(),
+    previewPdf: zod_1.z.string().optional(),
     categoryAndTags: zod_1.z.object({
         categories: zod_1.z.array(zod_1.z.string()),
         subCategories: zod_1.z.array(zod_1.z.string()).optional(),

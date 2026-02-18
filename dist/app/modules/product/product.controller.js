@@ -17,6 +17,7 @@ const http_status_1 = __importDefault(require("http-status"));
 const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const product_service_1 = require("./product.service");
+const cloudinary_config_1 = require("../../config/cloudinary.config");
 const getAllProduct = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield product_service_1.productServices.getAllProductFromDB(req.query);
     (0, sendResponse_1.default)(res, {
@@ -67,23 +68,41 @@ const getSingleProduct = (0, catchAsync_1.default)((req, res) => __awaiter(void 
 //   });
 // });
 const createProduct = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a, _b, _c;
     const files = req.files || {};
-    const productData = Object.assign(Object.assign({}, req.body), { featuredImg: ((_b = (_a = files["featuredImgFile"]) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.path) || req.body.featuredImg || "", gallery: files["galleryImagesFiles"]
-            ? files["galleryImagesFiles"].map((f) => f.path)
-            : req.body.gallery || [], previewImg: files["previewImgFile"]
-            ? files["previewImgFile"].map((f) => f.path)
-            : req.body.previewImg || [] });
-    // ✅ Handle author images dynamically
-    // if (req.body.bookInfo?.specification?.authors) {
-    //   productData.bookInfo.specification.authors =
-    //     req.body.bookInfo?.specification?.authors.map(
-    //       (author: any, index: number) => ({
-    //         ...author,
-    //         image: files[`authorImage_${index}`]?.[0]?.path || author.image || "",
-    //       })
-    //     );
-    // }
+    // req.body is already parsed by validateRequest middleware
+    const parsedData = req.body;
+    // Upload images to Cloudinary
+    const uploadToCloudinary = (buffer) => {
+        return new Promise((resolve, reject) => {
+            cloudinary_config_1.cloudinaryUpload.uploader.upload_stream({ resource_type: 'auto' }, (error, result) => {
+                if (error)
+                    reject(error);
+                else
+                    resolve(result.secure_url);
+            }).end(buffer);
+        });
+    };
+    let featuredImg = parsedData.featuredImg || "";
+    if ((_a = files["featuredImgFile"]) === null || _a === void 0 ? void 0 : _a[0]) {
+        featuredImg = yield uploadToCloudinary(files["featuredImgFile"][0].buffer);
+    }
+    let gallery = parsedData.gallery || [];
+    if ((_b = files["galleryImagesFiles"]) === null || _b === void 0 ? void 0 : _b.length) {
+        gallery = yield Promise.all(files["galleryImagesFiles"].map(f => uploadToCloudinary(f.buffer)));
+    }
+    let previewImg = parsedData.previewImg || [];
+    if ((_c = files["previewImgFile"]) === null || _c === void 0 ? void 0 : _c.length) {
+        previewImg = yield Promise.all(files["previewImgFile"].map(f => uploadToCloudinary(f.buffer)));
+    }
+    // PDF link handling (only for book products)
+    let pdfUrl = parsedData.previewPdf || undefined;
+    if (pdfUrl && pdfUrl.includes('/view')) {
+        pdfUrl = pdfUrl.replace('/view?usp=sharing', '/preview').replace('/view', '/preview');
+    }
+    const productData = Object.assign(Object.assign({}, parsedData), { featuredImg,
+        gallery,
+        previewImg, previewPdf: pdfUrl });
     const result = yield product_service_1.productServices.createProductOnDB(productData);
     (0, sendResponse_1.default)(res, {
         success: true,
@@ -122,53 +141,30 @@ const updateProduct = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, 
     var _a, _b, _c, _d;
     const { id } = req.params;
     const files = req.files || {};
-    const updatedData = Object.assign({}, req.body);
+    // req.body is already parsed by validateRequest middleware
+    const parsedData = req.body;
+    const updatedData = Object.assign({}, parsedData);
     // ✅ Safely handle featured image
     if ((_b = (_a = files["featuredImgFile"]) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.path) {
         updatedData.featuredImg = files["featuredImgFile"][0].path;
     }
-    else if (req.body.featuredImg) {
-        updatedData.featuredImg = req.body.featuredImg;
+    else if (parsedData.featuredImg) {
+        updatedData.featuredImg = parsedData.featuredImg;
     }
-    // ✅ Safely handle gallery
-    // if (files["galleryImagesFiles"]?.length) {
-    //   updatedData.gallery = files["galleryImagesFiles"].map((f) => f.path);
-    // } else if (req.body.gallery) {
-    //   // Handle JSON array (stringified or real array)
-    //   try {
-    //     updatedData.gallery = Array.isArray(req.body.gallery)
-    //       ? req.body.gallery
-    //       : JSON.parse(req.body.gallery);
-    //   } catch {
-    //     updatedData.gallery = [req.body.gallery];
-    //   }
-    // }
-    // // ✅ Safely handle preview images
-    // if (files["previewImgFile"]?.length) {
-    //   updatedData.previewImg = files["previewImgFile"].map((f) => f.path);
-    // } else if (req.body.previewImg) {
-    //   try {
-    //     updatedData.previewImg = Array.isArray(req.body.previewImg)
-    //       ? req.body.previewImg
-    //       : JSON.parse(req.body.previewImg);
-    //   } catch {
-    //     updatedData.previewImg = [req.body.previewImg];
-    //   }
-    // }
-    // // ✅ Handle author images update
-    // if (updatedData.bookInfo?.specification?.authors) {
-    //   updatedData.bookInfo.specification.authors =
-    //     updatedData.bookInfo.specification.authors.map(
-    //       (author: any, index: number) => ({
-    //         ...author,
-    //         image: files[`authorImage_${index}`]?.[0]?.path || author.image || "",
-    //       })
-    //     );
-    // }
+    // ✅ Safely handle PDF preview
+    if (parsedData.previewPdf) {
+        let pdfUrl = parsedData.previewPdf;
+        if (pdfUrl.includes('/view')) {
+            pdfUrl = pdfUrl.replace('/view?usp=sharing', '/preview').replace('/view', '/preview');
+        }
+        updatedData.previewPdf = pdfUrl;
+    }
+    else if (parsedData.previewPdf === null || parsedData.previewPdf === '') {
+        updatedData.previewPdf = undefined;
+    }
     // Handle gallery images
     if ((_c = files["galleryImagesFiles"]) === null || _c === void 0 ? void 0 : _c.length) {
         const newGalleryImages = files["galleryImagesFiles"].map((f) => f.path);
-        // Merge with existing gallery images (if provided)
         updatedData.gallery = Array.isArray(updatedData.gallery)
             ? [...updatedData.gallery, ...newGalleryImages]
             : newGalleryImages;
@@ -186,7 +182,6 @@ const updateProduct = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, 
     // Handle preview images
     if ((_d = files["previewImgFile"]) === null || _d === void 0 ? void 0 : _d.length) {
         const newPreviewImages = files["previewImgFile"].map((f) => f.path);
-        // Merge with existing preview images (if provided)
         updatedData.previewImg = Array.isArray(updatedData.previewImg)
             ? [...updatedData.previewImg, ...newPreviewImages]
             : newPreviewImages;

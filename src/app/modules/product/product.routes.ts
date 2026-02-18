@@ -27,10 +27,6 @@ router.post(
     { name: "galleryImagesFiles", maxCount: 5 },
     { name: "featuredImgFile", maxCount: 1 },
     { name: "previewImgFile", maxCount: 20 },
-    // ...Array.from({ length: 10 }).map((_, i) => ({
-    //   name: `authorImage_${i}`,
-    //   maxCount: 1,
-    // })),
   ]),
   validateRequest(createProductZodSchema),
   productControllers.createProduct
@@ -42,10 +38,6 @@ router.patch(
     { name: "galleryImagesFiles", maxCount: 5 },
     { name: "featuredImgFile", maxCount: 1 },
     { name: "previewImgFile", maxCount: 20 },
-    // ...Array.from({ length: 10 }).map((_, i) => ({
-    //   name: `authorImage_${i}`,
-    //   maxCount: 1,
-    // })),
   ]),
   validateRequest(updateProductZodSchema),
   productControllers.updateProduct

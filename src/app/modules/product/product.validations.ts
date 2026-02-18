@@ -109,6 +109,7 @@ export const createProductZodSchema = z.object({
   previewImg: z.array(z.string()).optional(),
   gallery: z.array(z.string()).optional(),
   video: z.string().optional(),
+  previewPdf: z.string().optional(),
 
   categoryAndTags: z.object({
     categories: z.array(z.string()),
