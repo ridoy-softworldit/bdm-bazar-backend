@@ -4,7 +4,6 @@ import { TransactionsSearchableFields } from "./transactions.const";
 import { TTransaction } from "./transactions.interface";
 import { TransactionModel } from "./transactions.model";
 import httpStatus from "http-status";
-import { v4 as uuidv4 } from "uuid";
 
 const getAllTransactionsFromDB = async (query: Record<string, unknown>) => {
   const transactionQuery = new QueryBuilder(TransactionModel.find(), query)
@@ -30,18 +29,19 @@ const getSingleTransactionFromDB = async (id: string) => {
 };
 
 const createTransactionOnDB = async (payload: TTransaction) => {
-  if (payload?.trackingNumber) {
-    const isTransactionExists = await TransactionModel.findOne({
-      trackingNumber: payload?.trackingNumber,
-    });
-    if (isTransactionExists) {
-      throw new AppError(httpStatus.CONFLICT, "Transaction already happen!");
-    }
+  if (!payload?.trackingNumber) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Tracking number is required!");
   }
-  payload.trackingNumber = uuidv4();
+
+  const isTransactionExists = await TransactionModel.findOne({
+    trackingNumber: payload.trackingNumber,
+  });
+  
+  if (isTransactionExists) {
+    throw new AppError(httpStatus.CONFLICT, "Transaction already exists!");
+  }
 
   const result = await TransactionModel.create(payload);
-
   return result;
 };
 

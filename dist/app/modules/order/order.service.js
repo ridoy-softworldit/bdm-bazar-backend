@@ -12,9 +12,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.orderServices = exports.OrderServices = void 0;
+exports.orderServices = void 0;
 const http_status_1 = __importDefault(require("http-status"));
-const nanoid_1 = require("nanoid");
 const QueryBuilder_1 = __importDefault(require("../../builder/QueryBuilder"));
 const handleAppError_1 = __importDefault(require("../../errors/handleAppError"));
 const product_model_1 = require("../product/product.model");
@@ -28,53 +27,32 @@ const getAllOrdersFromDB = (query) => __awaiter(void 0, void 0, void 0, function
         .sort()
         .paginate()
         .fields();
-    // ✅ Execute main query for product data
-    const data = yield orderQuery.modelQuery;
-    // ✅ Use built-in countTotal() from QueryBuilder
+    const data = yield orderQuery.modelQuery.populate({
+        path: "orderInfo.productInfo",
+        select: "description.name productInfo.price productInfo.salePrice featuredImg",
+    });
     const meta = yield orderQuery.countTotal();
     return {
         meta,
         data,
     };
 });
-// const recentlyOrderedProductsFromDB = async () => {
-//   // Aggregate orders to find recently ordered products
-//   const recentOrders = await OrderModel.aggregate([
-//     { $unwind: "$orderInfo" },
-//     { $sort: { "orderInfo.orderDate": -1 } },
-//     {
-//       $group: {
-//         _id: "$orderInfo.productInfo",
-//         lastOrderedDate: { $first: "$orderInfo.orderDate" },
-//       },
-//     },
-//     { $sort: { lastOrderedDate: -1 } },
-//     { $limit: 12 }, // Get top 12 recently ordered products
-//   ]);
-//   // Extract product IDs
-//   const productIds = recentOrders.map((order) => order._id);
-//   return productIds;
-// };
-//get my orders
 const recentlyOrderedProductsFromDB = () => __awaiter(void 0, void 0, void 0, function* () {
-    // 🔹 Step 1: Aggregate to get recent product IDs from orders
     const recentOrders = yield order_model_1.OrderModel.aggregate([
         { $unwind: "$orderInfo" },
         { $sort: { "orderInfo.orderDate": -1 } },
         {
             $group: {
-                _id: "$orderInfo.productInfo", // store productId
+                _id: "$orderInfo.productInfo",
                 lastOrderedDate: { $first: "$orderInfo.orderDate" },
             },
         },
         { $sort: { lastOrderedDate: -1 } },
         { $limit: 12 },
     ]);
-    // 🔹 Step 2: Extract product IDs
     const productIds = recentOrders.map((order) => order._id);
     if (!productIds.length)
         return [];
-    // 🔹 Step 3: Fetch products with full population
     const products = yield product_model_1.ProductModel.find({ _id: { $in: productIds } })
         .populate({
         path: "categoryAndTags.categories",
@@ -94,26 +72,23 @@ const recentlyOrderedProductsFromDB = () => __awaiter(void 0, void 0, void 0, fu
     })
         .lean()
         .exec();
-    // 🔹 Step 4: Sort products in the same order as recentOrders
     const sortedProducts = productIds.map((id) => products.find((p) => p._id.toString() === id.toString()));
     return sortedProducts.filter(Boolean);
 });
 const getMyOrdersFromDB = (customerId, query) => __awaiter(void 0, void 0, void 0, function* () {
-    const orderQuery = new QueryBuilder_1.default(order_model_1.OrderModel.find({ "orderInfo.orderBy": customerId }), // ✅ fixed
-    query)
+    const orderQuery = new QueryBuilder_1.default(order_model_1.OrderModel.find({ "orderInfo.orderBy": customerId }), query)
         .search(order_consts_1.OrderSearchableFields)
         .filter()
         .sort()
         .paginate()
         .fields();
-    const result = yield orderQuery.modelQuery;
+    const result = yield orderQuery.modelQuery.populate({
+        path: "orderInfo.productInfo",
+        select: "description.name productInfo.price productInfo.salePrice featuredImg",
+    });
     return result;
 });
-/**
- * ✅ Get Order by Tracking Number (Public - no authentication required)
- */
 const getOrderByTrackingNumberFromDB = (trackingNumber) => __awaiter(void 0, void 0, void 0, function* () {
-    // Find the order by nested field `orderInfo.trackingNumber`
     const result = yield order_model_1.OrderModel.findOne({
         "orderInfo.trackingNumber": trackingNumber,
     })
@@ -121,17 +96,15 @@ const getOrderByTrackingNumberFromDB = (trackingNumber) => __awaiter(void 0, voi
         path: "orderInfo.productInfo",
         select: "description.name productInfo.price productInfo.salePrice featuredImg",
     })
-        .lean(); // ✅ use .lean() for plain JS object (no Mongoose document overhead)
+        .lean();
     if (!result) {
         throw new handleAppError_1.default(http_status_1.default.NOT_FOUND, "Order not found with this tracking number!");
     }
-    // ✅ Find the specific orderInfo that matches this tracking number
     const matchedOrderInfo = result.orderInfo.find((info) => info.trackingNumber === trackingNumber);
     if (!matchedOrderInfo) {
         throw new handleAppError_1.default(http_status_1.default.NOT_FOUND, "Tracking number not found in this order!");
     }
-    // ✅ Final structured response
-    const orderWithTracking = {
+    return {
         _id: result._id,
         orderInfo: [matchedOrderInfo],
         customerInfo: result.customerInfo,
@@ -139,22 +112,14 @@ const getOrderByTrackingNumberFromDB = (trackingNumber) => __awaiter(void 0, voi
         totalAmount: result.totalAmount,
         createdAt: result.createdAt,
     };
-    return orderWithTracking;
 });
-exports.OrderServices = {
-    getOrderByTrackingNumberFromDB,
-};
-// Get order summary (pending/completed counts and totals)
 const getOrderSummaryFromDB = () => __awaiter(void 0, void 0, void 0, function* () {
-    // Aggregate orders data
     const orders = yield order_model_1.OrderModel.find();
-    // initialize counters
     let totalOrders = orders.length;
     let totalPendingOrders = 0;
     let totalCompletedOrders = 0;
     let totalPendingAmount = 0;
     let totalCompletedAmount = 0;
-    // loop through all orders
     orders.forEach((order) => {
         if (Array.isArray(order.orderInfo) && order.orderInfo.length > 0) {
             const status = order.orderInfo[0].status;
@@ -178,14 +143,12 @@ const getOrderSummaryFromDB = () => __awaiter(void 0, void 0, void 0, function* 
     };
 });
 const getOrderRangeSummaryFromDB = (startDate, endDate) => __awaiter(void 0, void 0, void 0, function* () {
-    // Parse dates and set time range
     const start = new Date(startDate);
     const end = new Date(endDate);
-    end.setHours(23, 59, 59, 999); // Include full end day
+    end.setHours(23, 59, 59, 999);
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
         throw new handleAppError_1.default(http_status_1.default.BAD_REQUEST, "Invalid date format!");
     }
-    // Fetch orders within date range
     const orders = yield order_model_1.OrderModel.find({
         createdAt: { $gte: start, $lte: end },
     }).lean();
@@ -196,7 +159,6 @@ const getOrderRangeSummaryFromDB = (startDate, endDate) => __awaiter(void 0, voi
     let totalCompletedAmount = 0;
     orders.forEach((order) => {
         if (Array.isArray(order.orderInfo) && order.orderInfo.length > 0) {
-            // Assuming first orderInfo status represents the whole order
             const status = order.orderInfo[0].status;
             const total = order.totalAmount || 0;
             if (status === "pending") {
@@ -222,7 +184,10 @@ const getOrderRangeSummaryFromDB = (startDate, endDate) => __awaiter(void 0, voi
     };
 });
 const getSingleOrderFromDB = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = order_model_1.OrderModel.findById(id);
+    const result = yield order_model_1.OrderModel.findById(id).populate({
+        path: "orderInfo.productInfo",
+        select: "description.name productInfo.price productInfo.salePrice featuredImg",
+    });
     if (!result) {
         throw new handleAppError_1.default(http_status_1.default.NOT_FOUND, "Order does not exists!");
     }
@@ -234,17 +199,15 @@ const generateOrderId = () => __awaiter(void 0, void 0, void 0, function* () {
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     const dateKey = `${year}${month}${day}`;
-    // Find or create counter for today
     const counter = yield order_counter_model_1.OrderCounterModel.findOneAndUpdate({ date: dateKey }, { $inc: { count: 1 } }, { upsert: true, new: true });
     const serialNumber = String(counter.count).padStart(4, '0');
     return `${dateKey}-${serialNumber}`;
 });
+const generateTrackingNumber = () => {
+    return Math.floor(Math.random() * 900000000) + 100000000;
+};
 const createOrderIntoDB = (payload) => __awaiter(void 0, void 0, void 0, function* () {
-    // Generate custom order ID
     payload.orderId = yield generateOrderId();
-    if (payload) {
-        payload.orderInfo.forEach((order) => (order.trackingNumber = (0, nanoid_1.nanoid)()));
-    }
     const result = yield order_model_1.OrderModel.create(payload);
     return result;
 });
@@ -260,7 +223,6 @@ const updateOrderInDB = (id, payload) => __awaiter(void 0, void 0, void 0, funct
     return result;
 });
 const changeOrderStatusInDB = (orderId, newStatus) => __awaiter(void 0, void 0, void 0, function* () {
-    // Valid status validation
     const validStatuses = [
         "pending",
         "processing",
@@ -272,10 +234,9 @@ const changeOrderStatusInDB = (orderId, newStatus) => __awaiter(void 0, void 0, 
     if (!validStatuses.includes(newStatus)) {
         throw new handleAppError_1.default(http_status_1.default.BAD_REQUEST, "Invalid status value!");
     }
-    // Update all orderInfo.status in the array
     const result = yield order_model_1.OrderModel.findByIdAndUpdate(orderId, {
         $set: {
-            "orderInfo.$[].status": newStatus, // Update all array elements
+            "orderInfo.$[].status": newStatus,
         },
     }, { new: true, runValidators: true }).lean();
     if (!result) {

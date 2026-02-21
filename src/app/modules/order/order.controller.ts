@@ -56,7 +56,7 @@ const getSingleOrder = catchAsync(async (req, res) => {
  * ✅ Get Order by Tracking Number (Public Route)
  */
 const getOrderByTrackingNumber = catchAsync(async (req, res) => {
-  const { trackingNumber } = req.params;
+  const trackingNumber = Number(req.params.trackingNumber);
 
   const result = await orderServices.getOrderByTrackingNumberFromDB(
     trackingNumber

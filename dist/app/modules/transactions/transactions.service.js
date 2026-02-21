@@ -18,7 +18,6 @@ const handleAppError_1 = __importDefault(require("../../errors/handleAppError"))
 const transactions_const_1 = require("./transactions.const");
 const transactions_model_1 = require("./transactions.model");
 const http_status_1 = __importDefault(require("http-status"));
-const uuid_1 = require("uuid");
 const getAllTransactionsFromDB = (query) => __awaiter(void 0, void 0, void 0, function* () {
     const transactionQuery = new QueryBuilder_1.default(transactions_model_1.TransactionModel.find(), query)
         .search(transactions_const_1.TransactionsSearchableFields)
@@ -37,15 +36,15 @@ const getSingleTransactionFromDB = (id) => __awaiter(void 0, void 0, void 0, fun
     return result;
 });
 const createTransactionOnDB = (payload) => __awaiter(void 0, void 0, void 0, function* () {
-    if (payload === null || payload === void 0 ? void 0 : payload.trackingNumber) {
-        const isTransactionExists = yield transactions_model_1.TransactionModel.findOne({
-            trackingNumber: payload === null || payload === void 0 ? void 0 : payload.trackingNumber,
-        });
-        if (isTransactionExists) {
-            throw new handleAppError_1.default(http_status_1.default.CONFLICT, "Transaction already happen!");
-        }
+    if (!(payload === null || payload === void 0 ? void 0 : payload.trackingNumber)) {
+        throw new handleAppError_1.default(http_status_1.default.BAD_REQUEST, "Tracking number is required!");
     }
-    payload.trackingNumber = (0, uuid_1.v4)();
+    const isTransactionExists = yield transactions_model_1.TransactionModel.findOne({
+        trackingNumber: payload.trackingNumber,
+    });
+    if (isTransactionExists) {
+        throw new handleAppError_1.default(http_status_1.default.CONFLICT, "Transaction already exists!");
+    }
     const result = yield transactions_model_1.TransactionModel.create(payload);
     return result;
 });

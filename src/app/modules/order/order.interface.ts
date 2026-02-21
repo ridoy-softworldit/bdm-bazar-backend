@@ -38,7 +38,7 @@ export type TPaymentInfo = {
 export type TOrderInfo = {
   orderBy: Types.ObjectId;
   productInfo: Types.ObjectId;
-  trackingNumber?: String;
+  trackingNumber: number;
   status:
     | "pending"
     | "processing"
@@ -58,7 +58,6 @@ export type TOrder = {
   paymentInfo: TPaymentInfo | "cash-on";
   deliveryCharge: number;
   totalAmount: number;
-  trackingNumber?: string;
   courierProvider?: 'steadfast' | 'pathao';
   createdAt?: Date;
   updatedAt?: Date;

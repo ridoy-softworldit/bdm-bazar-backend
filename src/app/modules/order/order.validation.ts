@@ -131,7 +131,12 @@ const orderInfoZodSchema = z.object({
           : "Must be a valid ObjectId string!",
     })
   ),
-  trackingNumber: z.string().optional(),
+  trackingNumber: z.number({
+    error: (issue) =>
+      issue.input === undefined
+        ? "Tracking number is required!"
+        : "Must be a number!",
+  }),
   status: z
     .enum(
       [

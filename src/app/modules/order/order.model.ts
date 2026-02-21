@@ -97,7 +97,8 @@ const orderInfoSchema = new Schema<TOrderInfo>(
       required: true,
     },
     trackingNumber: {
-      type: String,
+      type: Number,
+      required: true,
     },
     status: {
       type: String,
@@ -156,9 +157,6 @@ const orderSchema = new Schema<TOrder>(
     totalAmount: {
       type: Number,
       required: true,
-    },
-    trackingNumber: {
-      type: String,
     },
     courierProvider: {
       type: String,

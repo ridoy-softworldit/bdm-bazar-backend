@@ -61,7 +61,7 @@ const getSingleOrder = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
  * ✅ Get Order by Tracking Number (Public Route)
  */
 const getOrderByTrackingNumber = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { trackingNumber } = req.params;
+    const trackingNumber = Number(req.params.trackingNumber);
     const result = yield order_service_1.orderServices.getOrderByTrackingNumberFromDB(trackingNumber);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,

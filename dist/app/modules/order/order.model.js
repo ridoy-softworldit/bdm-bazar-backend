@@ -74,7 +74,8 @@ const orderInfoSchema = new mongoose_1.Schema({
         required: true,
     },
     trackingNumber: {
-        type: String,
+        type: Number,
+        required: true,
     },
     status: {
         type: String,
@@ -129,9 +130,6 @@ const orderSchema = new mongoose_1.Schema({
     totalAmount: {
         type: Number,
         required: true,
-    },
-    trackingNumber: {
-        type: String,
     },
     courierProvider: {
         type: String,

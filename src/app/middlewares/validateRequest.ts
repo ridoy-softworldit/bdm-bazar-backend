@@ -7,6 +7,8 @@ const validateRequest =  (schema  : ZodObject<any>) => {
             if (req.body.data) {
                 req.body = JSON.parse(req.body.data)
             }
+            
+
             // Validate the request body against the provided schema
             await schema.parseAsync(req.body);
             //if validation is successful, move to next middleware

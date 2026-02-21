@@ -1,5 +1,4 @@
 import httpStatus from "http-status";
-import { nanoid } from "nanoid";
 import QueryBuilder from "../../builder/QueryBuilder";
 import AppError from "../../errors/handleAppError";
 import { ProductModel } from "../product/product.model";
@@ -16,10 +15,11 @@ const getAllOrdersFromDB = async (query: Record<string, unknown>) => {
     .paginate()
     .fields();
 
-  // ✅ Execute main query for product data
-  const data = await orderQuery.modelQuery;
+  const data = await orderQuery.modelQuery.populate({
+    path: "orderInfo.productInfo",
+    select: "description.name productInfo.price productInfo.salePrice featuredImg",
+  });
 
-  // ✅ Use built-in countTotal() from QueryBuilder
   const meta = await orderQuery.countTotal();
 
   return {
@@ -28,37 +28,13 @@ const getAllOrdersFromDB = async (query: Record<string, unknown>) => {
   };
 };
 
-// const recentlyOrderedProductsFromDB = async () => {
-//   // Aggregate orders to find recently ordered products
-//   const recentOrders = await OrderModel.aggregate([
-//     { $unwind: "$orderInfo" },
-//     { $sort: { "orderInfo.orderDate": -1 } },
-//     {
-//       $group: {
-//         _id: "$orderInfo.productInfo",
-//         lastOrderedDate: { $first: "$orderInfo.orderDate" },
-//       },
-//     },
-//     { $sort: { lastOrderedDate: -1 } },
-//     { $limit: 12 }, // Get top 12 recently ordered products
-//   ]);
-
-//   // Extract product IDs
-//   const productIds = recentOrders.map((order) => order._id);
-
-//   return productIds;
-// };
-
-//get my orders
-
 const recentlyOrderedProductsFromDB = async () => {
-  // 🔹 Step 1: Aggregate to get recent product IDs from orders
   const recentOrders = await OrderModel.aggregate([
     { $unwind: "$orderInfo" },
     { $sort: { "orderInfo.orderDate": -1 } },
     {
       $group: {
-        _id: "$orderInfo.productInfo", // store productId
+        _id: "$orderInfo.productInfo",
         lastOrderedDate: { $first: "$orderInfo.orderDate" },
       },
     },
@@ -66,12 +42,10 @@ const recentlyOrderedProductsFromDB = async () => {
     { $limit: 12 },
   ]);
 
-  // 🔹 Step 2: Extract product IDs
   const productIds = recentOrders.map((order) => order._id);
 
   if (!productIds.length) return [];
 
-  // 🔹 Step 3: Fetch products with full population
   const products = await ProductModel.find({ _id: { $in: productIds } })
     .populate({
       path: "categoryAndTags.categories",
@@ -93,7 +67,6 @@ const recentlyOrderedProductsFromDB = async () => {
     .lean()
     .exec();
 
-  // 🔹 Step 4: Sort products in the same order as recentOrders
   const sortedProducts = productIds.map((id) =>
     products.find((p) => p._id.toString() === id.toString())
   );
@@ -106,7 +79,7 @@ const getMyOrdersFromDB = async (
   query: Record<string, unknown>
 ) => {
   const orderQuery = new QueryBuilder(
-    OrderModel.find({ "orderInfo.orderBy": customerId }), // ✅ fixed
+    OrderModel.find({ "orderInfo.orderBy": customerId }),
     query
   )
     .search(OrderSearchableFields)
@@ -115,16 +88,15 @@ const getMyOrdersFromDB = async (
     .paginate()
     .fields();
 
-  const result = await orderQuery.modelQuery;
+  const result = await orderQuery.modelQuery.populate({
+    path: "orderInfo.productInfo",
+    select: "description.name productInfo.price productInfo.salePrice featuredImg",
+  });
 
   return result;
 };
 
-/**
- * ✅ Get Order by Tracking Number (Public - no authentication required)
- */
-const getOrderByTrackingNumberFromDB = async (trackingNumber: string) => {
-  // Find the order by nested field `orderInfo.trackingNumber`
+const getOrderByTrackingNumberFromDB = async (trackingNumber: number) => {
   const result = await OrderModel.findOne({
     "orderInfo.trackingNumber": trackingNumber,
   })
@@ -133,7 +105,7 @@ const getOrderByTrackingNumberFromDB = async (trackingNumber: string) => {
       select:
         "description.name productInfo.price productInfo.salePrice featuredImg",
     })
-    .lean(); // ✅ use .lean() for plain JS object (no Mongoose document overhead)
+    .lean();
 
   if (!result) {
     throw new AppError(
@@ -142,7 +114,6 @@ const getOrderByTrackingNumberFromDB = async (trackingNumber: string) => {
     );
   }
 
-  // ✅ Find the specific orderInfo that matches this tracking number
   const matchedOrderInfo = result.orderInfo.find(
     (info) => info.trackingNumber === trackingNumber
   );
@@ -154,8 +125,7 @@ const getOrderByTrackingNumberFromDB = async (trackingNumber: string) => {
     );
   }
 
-  // ✅ Final structured response
-  const orderWithTracking = {
+  return {
     _id: result._id,
     orderInfo: [matchedOrderInfo],
     customerInfo: result.customerInfo,
@@ -163,27 +133,17 @@ const getOrderByTrackingNumberFromDB = async (trackingNumber: string) => {
     totalAmount: result.totalAmount,
     createdAt: result.createdAt,
   };
-
-  return orderWithTracking;
 };
 
-export const OrderServices = {
-  getOrderByTrackingNumberFromDB,
-};
-
-// Get order summary (pending/completed counts and totals)
 const getOrderSummaryFromDB = async () => {
-  // Aggregate orders data
   const orders = await OrderModel.find();
 
-  // initialize counters
   let totalOrders = orders.length;
   let totalPendingOrders = 0;
   let totalCompletedOrders = 0;
   let totalPendingAmount = 0;
   let totalCompletedAmount = 0;
 
-  // loop through all orders
   orders.forEach((order) => {
     if (Array.isArray(order.orderInfo) && order.orderInfo.length > 0) {
       const status = order.orderInfo[0].status;
@@ -207,20 +167,19 @@ const getOrderSummaryFromDB = async () => {
     totalCompletedAmount,
   };
 };
+
 const getOrderRangeSummaryFromDB = async (
   startDate: string,
   endDate: string
 ) => {
-  // Parse dates and set time range
   const start = new Date(startDate);
   const end = new Date(endDate);
-  end.setHours(23, 59, 59, 999); // Include full end day
+  end.setHours(23, 59, 59, 999);
 
   if (isNaN(start.getTime()) || isNaN(end.getTime())) {
     throw new AppError(httpStatus.BAD_REQUEST, "Invalid date format!");
   }
 
-  // Fetch orders within date range
   const orders = await OrderModel.find({
     createdAt: { $gte: start, $lte: end },
   }).lean();
@@ -233,7 +192,6 @@ const getOrderRangeSummaryFromDB = async (
 
   orders.forEach((order) => {
     if (Array.isArray(order.orderInfo) && order.orderInfo.length > 0) {
-      // Assuming first orderInfo status represents the whole order
       const status = order.orderInfo[0].status;
       const total = order.totalAmount || 0;
 
@@ -261,7 +219,10 @@ const getOrderRangeSummaryFromDB = async (
 };
 
 const getSingleOrderFromDB = async (id: string) => {
-  const result = OrderModel.findById(id);
+  const result = await OrderModel.findById(id).populate({
+    path: "orderInfo.productInfo",
+    select: "description.name productInfo.price productInfo.salePrice featuredImg",
+  });
 
   if (!result) {
     throw new AppError(httpStatus.NOT_FOUND, "Order does not exists!");
@@ -277,7 +238,6 @@ const generateOrderId = async (): Promise<string> => {
   const day = String(now.getDate()).padStart(2, '0');
   const dateKey = `${year}${month}${day}`;
 
-  // Find or create counter for today
   const counter = await OrderCounterModel.findOneAndUpdate(
     { date: dateKey },
     { $inc: { count: 1 } },
@@ -288,15 +248,13 @@ const generateOrderId = async (): Promise<string> => {
   return `${dateKey}-${serialNumber}`;
 };
 
-const createOrderIntoDB = async (payload: TOrder) => {
-  // Generate custom order ID
-  payload.orderId = await generateOrderId();
-  
-  if (payload) {
-    payload.orderInfo.forEach((order) => (order.trackingNumber = nanoid()));
-  }
-  const result = await OrderModel.create(payload);
+const generateTrackingNumber = (): number => {
+  return Math.floor(Math.random() * 900000000) + 100000000;
+};
 
+const createOrderIntoDB = async (payload: TOrder) => {
+  payload.orderId = await generateOrderId();
+  const result = await OrderModel.create(payload);
   return result;
 };
 
@@ -315,7 +273,6 @@ const updateOrderInDB = async (id: string, payload: Partial<TOrder>) => {
 };
 
 const changeOrderStatusInDB = async (orderId: string, newStatus: string) => {
-  // Valid status validation
   const validStatuses = [
     "pending",
     "processing",
@@ -329,12 +286,11 @@ const changeOrderStatusInDB = async (orderId: string, newStatus: string) => {
     throw new AppError(httpStatus.BAD_REQUEST, "Invalid status value!");
   }
 
-  // Update all orderInfo.status in the array
   const result = await OrderModel.findByIdAndUpdate(
     orderId,
     {
       $set: {
-        "orderInfo.$[].status": newStatus, // Update all array elements
+        "orderInfo.$[].status": newStatus,
       },
     },
     { new: true, runValidators: true }
