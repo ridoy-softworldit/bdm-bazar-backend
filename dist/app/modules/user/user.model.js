@@ -31,7 +31,6 @@ const userSchema = new mongoose_1.Schema({
     password: {
         type: String,
         minlength: [6, "Password must be at least 6 characters long!"],
-        required: [true, "Password is required to create a user!"],
     },
     role: {
         type: String,
@@ -84,7 +83,7 @@ const userSchema = new mongoose_1.Schema({
 userSchema.pre("save", function (next) {
     return __awaiter(this, void 0, void 0, function* () {
         const user = this;
-        if (user.password) {
+        if (user.password && user.isModified('password')) {
             user.password = yield bcrypt_1.default.hash(user.password, Number(config_1.default.bcrypt_salt_rounds));
         }
         next();

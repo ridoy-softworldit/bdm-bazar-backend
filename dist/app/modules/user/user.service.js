@@ -8,17 +8,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __rest = (this && this.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                t[p[i]] = s[p[i]];
-        }
-    return t;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -29,11 +18,19 @@ const http_status_1 = __importDefault(require("http-status"));
 const QueryBuilder_1 = __importDefault(require("../../builder/QueryBuilder"));
 const config_1 = __importDefault(require("../../config"));
 const handleAppError_1 = __importDefault(require("../../errors/handleAppError"));
+const customer_model_1 = require("../customer/customer.model");
+const order_model_1 = require("../order/order.model");
 const vendor_consts_1 = require("../vendor/vendor.consts");
 const user_model_1 = require("./user.model");
-const getAllUserFromDB = () => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield user_model_1.UserModel.find();
-    return result;
+const getAllUserFromDB = (query) => __awaiter(void 0, void 0, void 0, function* () {
+    const userQuery = new QueryBuilder_1.default(user_model_1.UserModel.find(), query)
+        .filter()
+        .sort()
+        .paginate()
+        .fields();
+    const data = yield userQuery.modelQuery;
+    const meta = yield userQuery.countTotal();
+    return { data, meta };
 });
 const getSingleUserFromDB = (id) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield user_model_1.UserModel.findById(id);
@@ -43,9 +40,15 @@ const getSingleUserFromDB = (id) => __awaiter(void 0, void 0, void 0, function* 
     }
     return result;
 });
-const getAllAdminFromDB = () => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield user_model_1.UserModel.find({ role: "admin" });
-    return result;
+const getAllAdminFromDB = (query) => __awaiter(void 0, void 0, void 0, function* () {
+    const adminQuery = new QueryBuilder_1.default(user_model_1.UserModel.find({ role: "admin" }), query)
+        .filter()
+        .sort()
+        .paginate()
+        .fields();
+    const data = yield adminQuery.modelQuery;
+    const meta = yield adminQuery.countTotal();
+    return { data, meta };
 });
 const getAdminProfileFromDB = (id) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield user_model_1.UserModel.findById(id);
@@ -58,30 +61,33 @@ const getAdminProfileFromDB = (id) => __awaiter(void 0, void 0, void 0, function
     return result;
 });
 const getAllVendorFromDB = (query) => __awaiter(void 0, void 0, void 0, function* () {
-    const vendorQuery = new QueryBuilder_1.default(user_model_1.UserModel.find(), query)
+    const vendorQuery = new QueryBuilder_1.default(user_model_1.UserModel.find({ role: "vendor" }), query)
         .search(vendor_consts_1.VendorSearchableFields)
         .filter()
         .sort()
         .paginate()
         .fields();
-    const result = yield vendorQuery.modelQuery;
-    return result;
+    const data = yield vendorQuery.modelQuery;
+    const meta = yield vendorQuery.countTotal();
+    return { data, meta };
 });
 const updateUserOnDB = (id, payload) => __awaiter(void 0, void 0, void 0, function* () {
     const isUserExists = yield user_model_1.UserModel.findById(id);
     if (!isUserExists) {
         throw new handleAppError_1.default(http_status_1.default.NOT_FOUND, "User does not Exists!");
     }
-    if ((isUserExists === null || isUserExists === void 0 ? void 0 : isUserExists.email) !== (payload === null || payload === void 0 ? void 0 : payload.email)) {
-        throw new handleAppError_1.default(http_status_1.default.UNAUTHORIZED, "Unauthorized User!");
+    // Prevent email update
+    if (payload === null || payload === void 0 ? void 0 : payload.email) {
+        delete payload.email;
     }
+    // Hash password if provided
     if (payload === null || payload === void 0 ? void 0 : payload.password) {
         payload.password = yield bcrypt_1.default.hash(payload === null || payload === void 0 ? void 0 : payload.password, Number(config_1.default.bcrypt_salt_rounds));
     }
-    const { email } = payload, updateData = __rest(payload, ["email"]);
-    const result = yield user_model_1.UserModel.findByIdAndUpdate(id, updateData, {
+    const result = yield user_model_1.UserModel.findByIdAndUpdate(id, payload, {
         new: true,
-    });
+        runValidators: true,
+    }).select("-password");
     return result;
 });
 const deletSingleUserFromDB = (id) => __awaiter(void 0, void 0, void 0, function* () {
@@ -91,6 +97,41 @@ const deletSingleUserFromDB = (id) => __awaiter(void 0, void 0, void 0, function
     }
     yield user_model_1.UserModel.findByIdAndDelete(id);
 });
+const getUserWithDetailsFromDB = (userId, query) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = yield user_model_1.UserModel.findById(userId).select("-password");
+    if (!user) {
+        throw new handleAppError_1.default(http_status_1.default.NOT_FOUND, "User does not exist!");
+    }
+    let customerData = null;
+    let orders = [];
+    let orderMeta = { page: 1, limit: 10, total: 0, totalPage: 0 };
+    if (user.role === "customer") {
+        customerData = yield customer_model_1.CustomerModel.findOne({ userId }).populate([
+            { path: "cartItem.productInfo.productId" },
+            { path: "wishlist.products" },
+        ]);
+        // Find orders by customerId if customer exists, otherwise try userId directly
+        const searchId = customerData ? customerData._id : userId;
+        const orderQuery = new QueryBuilder_1.default(order_model_1.OrderModel.find({ "orderInfo.orderBy": searchId }), query)
+            .filter()
+            .sort()
+            .paginate()
+            .fields();
+        orders = yield orderQuery.modelQuery.populate({
+            path: "orderInfo.productInfo",
+            select: "description.name productInfo.price productInfo.salePrice featuredImg",
+        });
+        orderMeta = yield orderQuery.countTotal();
+    }
+    return {
+        data: {
+            user,
+            customer: customerData,
+            orders,
+        },
+        meta: orderMeta,
+    };
+});
 exports.UserServices = {
     getAllUserFromDB,
     getSingleUserFromDB,
@@ -99,4 +140,5 @@ exports.UserServices = {
     getAllVendorFromDB,
     getAdminProfileFromDB,
     updateUserOnDB,
+    getUserWithDetailsFromDB,
 };

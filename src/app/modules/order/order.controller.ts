@@ -25,7 +25,8 @@ const getMyOrders = catchAsync(async (req, res) => {
     success: true,
     statusCode: httpStatus.OK,
     message: "Orders retrieved successfully!",
-    data: result,
+    data: result.data,
+    meta: result.meta,
   });
 });
 

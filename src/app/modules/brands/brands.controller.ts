@@ -2,6 +2,7 @@ import httpStatus from "http-status";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { brandServices } from "./brands.service";
+import { uploadBufferToCloudinary } from "../../config/cloudinary.config";
 
 /**
  * 🔹 Get all brands
@@ -39,24 +40,41 @@ const createBrand = catchAsync(async (req, res) => {
   const files =
     (req.files as { [fieldname: string]: Express.Multer.File[] }) || {};
 
+  let iconUrl = req.body.iconUrl || "";
+  if (files["iconFile"]?.[0]?.buffer) {
+    const uploaded = await uploadBufferToCloudinary(
+      files["iconFile"][0].buffer,
+      files["iconFile"][0].originalname
+    );
+    iconUrl = uploaded?.secure_url || "";
+  }
+
   const brandData = {
     ...req.body,
     icon: {
       name: req.body.iconName || "",
-      url: files["iconFile"]?.[0]?.path || req.body.iconUrl || "",
+      url: iconUrl,
     },
     images: [],
   };
 
   // ✅ Handle images (array of layout + image)
   if (files["imagesFiles"]?.length) {
-    brandData.images = files["imagesFiles"].map((file, index) => ({
-      layout:
-        (req.body[`images[${index}].layout`] as string) ||
-        req.body.layout ||
-        "grid",
-      image: file.path,
-    }));
+    brandData.images = await Promise.all(
+      files["imagesFiles"].map(async (file, index) => {
+        const uploaded = await uploadBufferToCloudinary(
+          file.buffer,
+          file.originalname
+        );
+        return {
+          layout:
+            (req.body[`images[${index}].layout`] as string) ||
+            req.body.layout ||
+            "grid",
+          image: uploaded?.secure_url || "",
+        };
+      })
+    );
   } else if (req.body.images) {
     // ✅ Handle JSON input for images
     try {
@@ -89,10 +107,14 @@ const updateBrand = catchAsync(async (req, res) => {
   const updatedData: any = { ...req.body };
 
   // ✅ Update icon (prefer uploaded file)
-  if (files["iconFile"]?.[0]?.path) {
+  if (files["iconFile"]?.[0]?.buffer) {
+    const uploaded = await uploadBufferToCloudinary(
+      files["iconFile"][0].buffer,
+      files["iconFile"][0].originalname
+    );
     updatedData.icon = {
       name: req.body.iconName || "",
-      url: files["iconFile"][0].path,
+      url: uploaded?.secure_url || "",
     };
   } else if (req.body.iconUrl || req.body.iconName) {
     updatedData.icon = {
@@ -103,13 +125,21 @@ const updateBrand = catchAsync(async (req, res) => {
 
   // ✅ Update images (either uploaded files or JSON)
   if (files["imagesFiles"]?.length) {
-    updatedData.images = files["imagesFiles"].map((file, index) => ({
-      layout:
-        (req.body[`images[${index}].layout`] as string) ||
-        req.body.layout ||
-        "grid",
-      image: file.path,
-    }));
+    updatedData.images = await Promise.all(
+      files["imagesFiles"].map(async (file, index) => {
+        const uploaded = await uploadBufferToCloudinary(
+          file.buffer,
+          file.originalname
+        );
+        return {
+          layout:
+            (req.body[`images[${index}].layout`] as string) ||
+            req.body.layout ||
+            "grid",
+          image: uploaded?.secure_url || "",
+        };
+      })
+    );
   } else if (req.body.images) {
     try {
       updatedData.images = Array.isArray(req.body.images)

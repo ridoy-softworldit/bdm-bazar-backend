@@ -38,6 +38,9 @@ const loginUserUsingProvider = z.object({
     .email("Invalid email format!")
     .min(1, "Email is required to create a user!")
     .max(50, "Email must be less than 50 characters!"),
+  provider: z.enum(['facebook', 'google'], {
+    message: "Provider must be 'facebook' or 'google'!",
+  }),
 });
 
 const changePassword = z.object({

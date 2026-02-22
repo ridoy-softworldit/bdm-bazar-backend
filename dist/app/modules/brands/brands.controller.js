@@ -17,6 +17,7 @@ const http_status_1 = __importDefault(require("http-status"));
 const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const brands_service_1 = require("./brands.service");
+const cloudinary_config_1 = require("../../config/cloudinary.config");
 /**
  * 🔹 Get all brands
  */
@@ -48,18 +49,26 @@ const getSingleBrand = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
 const createBrand = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
     const files = req.files || {};
+    let iconUrl = req.body.iconUrl || "";
+    if ((_b = (_a = files["iconFile"]) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.buffer) {
+        const uploaded = yield (0, cloudinary_config_1.uploadBufferToCloudinary)(files["iconFile"][0].buffer, files["iconFile"][0].originalname);
+        iconUrl = (uploaded === null || uploaded === void 0 ? void 0 : uploaded.secure_url) || "";
+    }
     const brandData = Object.assign(Object.assign({}, req.body), { icon: {
             name: req.body.iconName || "",
-            url: ((_b = (_a = files["iconFile"]) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.path) || req.body.iconUrl || "",
+            url: iconUrl,
         }, images: [] });
     // ✅ Handle images (array of layout + image)
     if ((_c = files["imagesFiles"]) === null || _c === void 0 ? void 0 : _c.length) {
-        brandData.images = files["imagesFiles"].map((file, index) => ({
-            layout: req.body[`images[${index}].layout`] ||
-                req.body.layout ||
-                "grid",
-            image: file.path,
-        }));
+        brandData.images = yield Promise.all(files["imagesFiles"].map((file, index) => __awaiter(void 0, void 0, void 0, function* () {
+            const uploaded = yield (0, cloudinary_config_1.uploadBufferToCloudinary)(file.buffer, file.originalname);
+            return {
+                layout: req.body[`images[${index}].layout`] ||
+                    req.body.layout ||
+                    "grid",
+                image: (uploaded === null || uploaded === void 0 ? void 0 : uploaded.secure_url) || "",
+            };
+        })));
     }
     else if (req.body.images) {
         // ✅ Handle JSON input for images
@@ -89,10 +98,11 @@ const updateBrand = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, vo
     const files = req.files || {};
     const updatedData = Object.assign({}, req.body);
     // ✅ Update icon (prefer uploaded file)
-    if ((_b = (_a = files["iconFile"]) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.path) {
+    if ((_b = (_a = files["iconFile"]) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.buffer) {
+        const uploaded = yield (0, cloudinary_config_1.uploadBufferToCloudinary)(files["iconFile"][0].buffer, files["iconFile"][0].originalname);
         updatedData.icon = {
             name: req.body.iconName || "",
-            url: files["iconFile"][0].path,
+            url: (uploaded === null || uploaded === void 0 ? void 0 : uploaded.secure_url) || "",
         };
     }
     else if (req.body.iconUrl || req.body.iconName) {
@@ -103,12 +113,15 @@ const updateBrand = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, vo
     }
     // ✅ Update images (either uploaded files or JSON)
     if ((_c = files["imagesFiles"]) === null || _c === void 0 ? void 0 : _c.length) {
-        updatedData.images = files["imagesFiles"].map((file, index) => ({
-            layout: req.body[`images[${index}].layout`] ||
-                req.body.layout ||
-                "grid",
-            image: file.path,
-        }));
+        updatedData.images = yield Promise.all(files["imagesFiles"].map((file, index) => __awaiter(void 0, void 0, void 0, function* () {
+            const uploaded = yield (0, cloudinary_config_1.uploadBufferToCloudinary)(file.buffer, file.originalname);
+            return {
+                layout: req.body[`images[${index}].layout`] ||
+                    req.body.layout ||
+                    "grid",
+                image: (uploaded === null || uploaded === void 0 ? void 0 : uploaded.secure_url) || "",
+            };
+        })));
     }
     else if (req.body.images) {
         try {

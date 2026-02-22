@@ -82,11 +82,12 @@ const getMyOrdersFromDB = (customerId, query) => __awaiter(void 0, void 0, void 
         .sort()
         .paginate()
         .fields();
-    const result = yield orderQuery.modelQuery.populate({
+    const data = yield orderQuery.modelQuery.populate({
         path: "orderInfo.productInfo",
         select: "description.name productInfo.price productInfo.salePrice featuredImg",
     });
-    return result;
+    const meta = yield orderQuery.countTotal();
+    return { data, meta };
 });
 const getOrderByTrackingNumberFromDB = (trackingNumber) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield order_model_1.OrderModel.findOne({

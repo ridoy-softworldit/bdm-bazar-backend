@@ -10,7 +10,8 @@ const getAllCustomer = catchAsync(async (req, res) => {
     success: true,
     statusCode: httpStatus.OK,
     message: "Customers retrieved successfully!",
-    data: result,
+    data: result.data,
+    meta: result.meta,
   });
 });
 

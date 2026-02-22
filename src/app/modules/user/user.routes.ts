@@ -15,6 +15,9 @@ router.get(
   UserControllers.getAllUser
 );
 
+//get user with complete details
+router.get("/:id/details", UserControllers.getUserWithDetails);
+
 //get all admin user
 router.get(
   "/admins",
@@ -36,6 +39,7 @@ router.get(
   UserControllers.getSuperAdmin
 );
 
+//get single user
 router.get("/:id", UserControllers.getSingleUser);
 
 router.patch("/:id", UserControllers.updateUser);

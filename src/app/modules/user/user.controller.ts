@@ -4,13 +4,14 @@ import sendResponse from "../../utils/sendResponse";
 import { UserServices } from "./user.service";
 
 const getAllUser = catchAsync(async (req, res) => {
-  const result = await UserServices.getAllUserFromDB();
+  const result = await UserServices.getAllUserFromDB(req.query);
 
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: "All user data retrieve successfully!",
-    data: result,
+    data: result.data,
+    meta: result.meta,
   });
 });
 
@@ -28,13 +29,14 @@ const getSingleUser = catchAsync(async (req, res) => {
 });
 
 const getAllAdminUser = catchAsync(async (req, res) => {
-  const result = await UserServices.getAllAdminFromDB();
+  const result = await UserServices.getAllAdminFromDB(req.query);
 
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: "All admin data retrieve successfully!",
-    data: result,
+    data: result.data,
+    meta: result.meta,
   });
 });
 
@@ -57,7 +59,8 @@ const getAllVendorUser = catchAsync(async (req, res) => {
     success: true,
     statusCode: httpStatus.OK,
     message: "All vendor data retrieve successfully!",
-    data: result,
+    data: result.data,
+    meta: result.meta,
   });
 });
 
@@ -88,6 +91,19 @@ const deleteSingleUser = catchAsync(async (req, res) => {
   });
 });
 
+const getUserWithDetails = catchAsync(async (req, res) => {
+  const userId = req.params.id;
+  const result = await UserServices.getUserWithDetailsFromDB(userId, req.query);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "User details retrieved successfully!",
+    data: result.data,
+    meta: result.meta,
+  });
+});
+
 export const UserControllers = {
   getSingleUser,
   getAllUser,
@@ -96,4 +112,5 @@ export const UserControllers = {
   getAllVendorUser,
   updateUser,
   deleteSingleUser,
+  getUserWithDetails,
 };

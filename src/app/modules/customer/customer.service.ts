@@ -30,8 +30,10 @@ const getAllCustomerFromDB = async (query: Record<string, unknown>) => {
     .paginate()
     .fields();
 
-  const result = await customerQuery.modelQuery;
-  return result;
+  const data = await customerQuery.modelQuery;
+  const meta = await customerQuery.countTotal();
+
+  return { data, meta };
 };
 
 // Get Single Customer by ID

@@ -41,6 +41,9 @@ const loginUserUsingProvider = zod_1.default.object({
         .email("Invalid email format!")
         .min(1, "Email is required to create a user!")
         .max(50, "Email must be less than 50 characters!"),
+    provider: zod_1.default.enum(['facebook', 'google'], {
+        message: "Provider must be 'facebook' or 'google'!",
+    }),
 });
 const changePassword = zod_1.default.object({
     userId: zod_1.default.string().min(1, "User ID is required!"),

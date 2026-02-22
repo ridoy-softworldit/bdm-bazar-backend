@@ -20,7 +20,6 @@ const userSchema = new Schema<TUser>(
     password: {
       type: String,
       minlength: [6, "Password must be at least 6 characters long!"],
-      required: [true, "Password is required to create a user!"],
     },
     role: {
       type: String,
@@ -76,7 +75,7 @@ const userSchema = new Schema<TUser>(
 userSchema.pre("save", async function (next) {
   const user = this;
 
-  if (user.password) {
+  if (user.password && user.isModified('password')) {
     user.password = await bcrypt.hash(
       user.password,
       Number(config.bcrypt_salt_rounds)

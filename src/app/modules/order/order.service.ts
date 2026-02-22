@@ -88,12 +88,14 @@ const getMyOrdersFromDB = async (
     .paginate()
     .fields();
 
-  const result = await orderQuery.modelQuery.populate({
+  const data = await orderQuery.modelQuery.populate({
     path: "orderInfo.productInfo",
     select: "description.name productInfo.price productInfo.salePrice featuredImg",
   });
 
-  return result;
+  const meta = await orderQuery.countTotal();
+
+  return { data, meta };
 };
 
 const getOrderByTrackingNumberFromDB = async (trackingNumber: number) => {

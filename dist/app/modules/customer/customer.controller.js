@@ -23,7 +23,8 @@ const getAllCustomer = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
         success: true,
         statusCode: http_status_1.default.OK,
         message: "Customers retrieved successfully!",
-        data: result,
+        data: result.data,
+        meta: result.meta,
     });
 }));
 const getSingleCustomer = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {

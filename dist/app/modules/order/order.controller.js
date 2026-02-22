@@ -35,7 +35,8 @@ const getMyOrders = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, vo
         success: true,
         statusCode: http_status_1.default.OK,
         message: "Orders retrieved successfully!",
-        data: result,
+        data: result.data,
+        meta: result.meta,
     });
 }));
 const recentlyOrderedProducts = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {

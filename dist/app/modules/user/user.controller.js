@@ -18,12 +18,13 @@ const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const user_service_1 = require("./user.service");
 const getAllUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield user_service_1.UserServices.getAllUserFromDB();
+    const result = yield user_service_1.UserServices.getAllUserFromDB(req.query);
     (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: http_status_1.default.OK,
         message: "All user data retrieve successfully!",
-        data: result,
+        data: result.data,
+        meta: result.meta,
     });
 }));
 const getSingleUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -37,12 +38,13 @@ const getSingleUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, 
     });
 }));
 const getAllAdminUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield user_service_1.UserServices.getAllAdminFromDB();
+    const result = yield user_service_1.UserServices.getAllAdminFromDB(req.query);
     (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: http_status_1.default.OK,
         message: "All admin data retrieve successfully!",
-        data: result,
+        data: result.data,
+        meta: result.meta,
     });
 }));
 const getSuperAdmin = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -61,7 +63,8 @@ const getAllVendorUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 
         success: true,
         statusCode: http_status_1.default.OK,
         message: "All vendor data retrieve successfully!",
-        data: result,
+        data: result.data,
+        meta: result.meta,
     });
 }));
 const updateUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -85,6 +88,17 @@ const deleteSingleUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 
         data: undefined,
     });
 }));
+const getUserWithDetails = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.params.id;
+    const result = yield user_service_1.UserServices.getUserWithDetailsFromDB(userId, req.query);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_1.default.OK,
+        message: "User details retrieved successfully!",
+        data: result.data,
+        meta: result.meta,
+    });
+}));
 exports.UserControllers = {
     getSingleUser,
     getAllUser,
@@ -93,4 +107,5 @@ exports.UserControllers = {
     getAllVendorUser,
     updateUser,
     deleteSingleUser,
+    getUserWithDetails,
 };

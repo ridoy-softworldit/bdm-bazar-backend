@@ -37,8 +37,9 @@ const getAllCustomerFromDB = (query) => __awaiter(void 0, void 0, void 0, functi
         .sort()
         .paginate()
         .fields();
-    const result = yield customerQuery.modelQuery;
-    return result;
+    const data = yield customerQuery.modelQuery;
+    const meta = yield customerQuery.countTotal();
+    return { data, meta };
 });
 // Get Single Customer by ID
 const getSingleCustomerFromDB = (id) => __awaiter(void 0, void 0, void 0, function* () {
