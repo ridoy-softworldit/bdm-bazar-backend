@@ -31,18 +31,12 @@ const normalizeBinding = (binding?: string) => {
 // };
 
 const createProductOnDB = async (payload: TProduct) => {
-  // 🔹 Fetch category to check if it's a Book-type product
-  // Use a type assertion because 'category' is not declared on TProduct in the current interface.
-  const categoryId = (payload as any).category;
-  const category = await CategoryModel.findById(categoryId).populate(
-    "mainCategory"
-  );
+  // Check if any category is a book category
+  const categoryIds = payload.categoryAndTags.categories;
+  const categories = await CategoryModel.find({ _id: { $in: categoryIds } });
+  const isBook = categories.some(cat => cat.mainCategory?.toLowerCase() === 'book');
 
-  const isBook =
-    // category?.name?.toLowerCase() === "book" ||
-    category?.mainCategory?.toLowerCase() === "book";
-
-  // 🔹 Conditionally process bookInfo
+  // Only keep bookInfo for book products
   if (isBook) {
     if (payload.bookInfo?.specification?.binding) {
       payload.bookInfo.specification.binding = normalizeBinding(
@@ -50,7 +44,7 @@ const createProductOnDB = async (payload: TProduct) => {
       ) as "hardcover" | "paperback";
     }
   } else {
-    // 🧹 Remove bookInfo if category is not a book
+    // Remove bookInfo for non-book products
     delete (payload as any).bookInfo;
   }
 

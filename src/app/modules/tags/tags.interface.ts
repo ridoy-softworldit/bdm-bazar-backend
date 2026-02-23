@@ -8,5 +8,5 @@ export type TTag = {
   slug?: string;
   details: string;
   icon?: TIcon;
-  image: string;
+  image?: string;
 };

@@ -22,7 +22,6 @@ const storage = new CloudinaryStorage({
     const isPdf = file.mimetype === 'application/pdf';
     
     if (isPdf) {
-      // PDFs use memory storage for Google Drive upload
       return {
         resource_type: 'raw' as any,
         public_id: `${uniqueFileName}.pdf`,
@@ -37,9 +36,12 @@ const storage = new CloudinaryStorage({
   },
 });
 
-// Use memory storage for PDFs, Cloudinary for images
-const memoryStorage = multer.memoryStorage();
-
+// Cloudinary storage for direct upload (categories)
 export const multerUpload = multer({ 
+  storage: storage,
+});
+
+// Memory storage for manual buffer upload (brands, products)
+export const multerMemory = multer({ 
   storage: multer.memoryStorage(),
 });

@@ -140,14 +140,21 @@ export const createProductZodSchema = z.object({
         .object({
           authors: z.array(z.string()).optional(),
           publisher: z.string().optional(),
+          edition: z.string().optional(),
+          editionYear: z.number().optional(),
           numberOfPages: z.number().optional(),
           country: z.string().optional(),
           language: z.string().optional(),
+          isbn: z.string().optional(),
+          binding: z.enum(["hardcover", "paperback"]).optional(),
         })
         .optional(),
       format: z
         .enum(["hardcover", "paperback", "ebook", "audiobook"])
         .optional(),
+      genre: z.array(z.string()).optional(),
+      series: z.string().optional(),
+      translator: z.string().optional(),
     })
     .optional(),
 });

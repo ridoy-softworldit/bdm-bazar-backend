@@ -6,9 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProductRoutes = void 0;
 const express_1 = __importDefault(require("express"));
 const multer_config_1 = require("../../config/multer.config");
-const validateRequest_1 = __importDefault(require("../../middlewares/validateRequest"));
 const product_controller_1 = require("./product.controller");
-const product_validations_1 = require("./product.validations");
 const router = express_1.default.Router();
 router.get("/", product_controller_1.productControllers.getAllProduct);
 router.get("/search", product_controller_1.productControllers.searchProducts);
@@ -20,11 +18,11 @@ router.post("/create-product", multer_config_1.multerUpload.fields([
     { name: "galleryImagesFiles", maxCount: 5 },
     { name: "featuredImgFile", maxCount: 1 },
     { name: "previewImgFile", maxCount: 20 },
-]), (0, validateRequest_1.default)(product_validations_1.createProductZodSchema), product_controller_1.productControllers.createProduct);
+]), product_controller_1.productControllers.createProduct);
 router.patch("/update-product/:id", multer_config_1.multerUpload.fields([
     { name: "galleryImagesFiles", maxCount: 5 },
     { name: "featuredImgFile", maxCount: 1 },
     { name: "previewImgFile", maxCount: 20 },
-]), (0, validateRequest_1.default)(product_validations_1.updateProductZodSchema), product_controller_1.productControllers.updateProduct);
+]), product_controller_1.productControllers.updateProduct);
 router.delete("/delete-product/:id", product_controller_1.productControllers.deleteSingleProduct);
 exports.ProductRoutes = router;

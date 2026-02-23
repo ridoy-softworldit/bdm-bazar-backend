@@ -1,5 +1,5 @@
 import express from "express";
-import { multerUpload } from "../../config/multer.config";
+import { multerMemory } from "../../config/multer.config";
 import validateRequest from "../../middlewares/validateRequest";
 import { tagControllers } from "./tags.controllers";
 import { createTagZodSchema } from "./tags.validations";
@@ -12,7 +12,7 @@ router.get("/:id", tagControllers.getSingleTag);
 
 router.post(
   "/create-tag",
-  multerUpload.fields([
+  multerMemory.fields([
     { name: "imageFile", maxCount: 1 },
     { name: "iconFile", maxCount: 1 },
   ]),
@@ -22,7 +22,7 @@ router.post(
 
 router.patch(
   "/update-tag/:id",
-  multerUpload.fields([
+  multerMemory.fields([
     { name: "imageFile", maxCount: 1 },
     { name: "iconFile", maxCount: 1 },
   ]),

@@ -41,22 +41,19 @@ const normalizeBinding = (binding) => {
 //   return result;
 // };
 const createProductOnDB = (payload) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
-    // 🔹 Fetch category to check if it's a Book-type product
-    // Use a type assertion because 'category' is not declared on TProduct in the current interface.
-    const categoryId = payload.category;
-    const category = yield category_model_1.CategoryModel.findById(categoryId).populate("mainCategory");
-    const isBook = 
-    // category?.name?.toLowerCase() === "book" ||
-    ((_a = category === null || category === void 0 ? void 0 : category.mainCategory) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === "book";
-    // 🔹 Conditionally process bookInfo
+    var _a, _b;
+    // Check if any category is a book category
+    const categoryIds = payload.categoryAndTags.categories;
+    const categories = yield category_model_1.CategoryModel.find({ _id: { $in: categoryIds } });
+    const isBook = categories.some(cat => { var _a; return ((_a = cat.mainCategory) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === 'book'; });
+    // Only keep bookInfo for book products
     if (isBook) {
-        if ((_c = (_b = payload.bookInfo) === null || _b === void 0 ? void 0 : _b.specification) === null || _c === void 0 ? void 0 : _c.binding) {
+        if ((_b = (_a = payload.bookInfo) === null || _a === void 0 ? void 0 : _a.specification) === null || _b === void 0 ? void 0 : _b.binding) {
             payload.bookInfo.specification.binding = normalizeBinding(payload.bookInfo.specification.binding);
         }
     }
     else {
-        // 🧹 Remove bookInfo if category is not a book
+        // Remove bookInfo for non-book products
         delete payload.bookInfo;
     }
     const result = yield product_model_1.ProductModel.create(payload);

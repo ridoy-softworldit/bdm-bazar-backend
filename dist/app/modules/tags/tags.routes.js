@@ -12,11 +12,11 @@ const tags_validations_1 = require("./tags.validations");
 const router = express_1.default.Router();
 router.get("/", tags_controllers_1.tagControllers.getAllTags);
 router.get("/:id", tags_controllers_1.tagControllers.getSingleTag);
-router.post("/create-tag", multer_config_1.multerUpload.fields([
+router.post("/create-tag", multer_config_1.multerMemory.fields([
     { name: "imageFile", maxCount: 1 },
     { name: "iconFile", maxCount: 1 },
 ]), (0, validateRequest_1.default)(tags_validations_1.createTagZodSchema), tags_controllers_1.tagControllers.createTag);
-router.patch("/update-tag/:id", multer_config_1.multerUpload.fields([
+router.patch("/update-tag/:id", multer_config_1.multerMemory.fields([
     { name: "imageFile", maxCount: 1 },
     { name: "iconFile", maxCount: 1 },
 ]), tags_controllers_1.tagControllers.updateTag);

@@ -17,7 +17,6 @@ const http_status_1 = __importDefault(require("http-status"));
 const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const product_service_1 = require("./product.service");
-const cloudinary_config_1 = require("../../config/cloudinary.config");
 const getAllProduct = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield product_service_1.productServices.getAllProductFromDB(req.query);
     (0, sendResponse_1.default)(res, {
@@ -68,37 +67,38 @@ const getSingleProduct = (0, catchAsync_1.default)((req, res) => __awaiter(void 
 //   });
 // });
 const createProduct = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e, _f;
     const files = req.files || {};
-    // req.body is already parsed by validateRequest middleware
-    const parsedData = req.body;
-    // Upload images to Cloudinary
-    const uploadToCloudinary = (buffer) => {
-        return new Promise((resolve, reject) => {
-            cloudinary_config_1.cloudinaryUpload.uploader.upload_stream({ resource_type: 'auto' }, (error, result) => {
-                if (error)
-                    reject(error);
-                else
-                    resolve(result.secure_url);
-            }).end(buffer);
-        });
-    };
+    // Parse data field if sent as JSON string
+    let parsedData = req.body;
+    if (req.body.data) {
+        try {
+            parsedData = typeof req.body.data === 'string' ? JSON.parse(req.body.data) : req.body.data;
+        }
+        catch (error) {
+            parsedData = req.body;
+        }
+    }
+    // Images already uploaded to Cloudinary via multer
     let featuredImg = parsedData.featuredImg || "";
-    if ((_a = files["featuredImgFile"]) === null || _a === void 0 ? void 0 : _a[0]) {
-        featuredImg = yield uploadToCloudinary(files["featuredImgFile"][0].buffer);
+    if ((_b = (_a = files["featuredImgFile"]) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.path) {
+        featuredImg = files["featuredImgFile"][0].path;
     }
     let gallery = parsedData.gallery || [];
-    if ((_b = files["galleryImagesFiles"]) === null || _b === void 0 ? void 0 : _b.length) {
-        gallery = yield Promise.all(files["galleryImagesFiles"].map(f => uploadToCloudinary(f.buffer)));
+    if ((_c = files["galleryImagesFiles"]) === null || _c === void 0 ? void 0 : _c.length) {
+        gallery = files["galleryImagesFiles"].map(f => f.path);
     }
     let previewImg = parsedData.previewImg || [];
-    if ((_c = files["previewImgFile"]) === null || _c === void 0 ? void 0 : _c.length) {
-        previewImg = yield Promise.all(files["previewImgFile"].map(f => uploadToCloudinary(f.buffer)));
+    if ((_d = files["previewImgFile"]) === null || _d === void 0 ? void 0 : _d.length) {
+        previewImg = files["previewImgFile"].map(f => f.path);
     }
-    // PDF link handling (only for book products)
     let pdfUrl = parsedData.previewPdf || undefined;
     if (pdfUrl && pdfUrl.includes('/view')) {
         pdfUrl = pdfUrl.replace('/view?usp=sharing', '/preview').replace('/view', '/preview');
+    }
+    // Clean up empty date fields
+    if (((_e = parsedData.productInfo) === null || _e === void 0 ? void 0 : _e.publicationDate) === '' || ((_f = parsedData.productInfo) === null || _f === void 0 ? void 0 : _f.publicationDate) === ' ') {
+        delete parsedData.productInfo.publicationDate;
     }
     const productData = Object.assign(Object.assign({}, parsedData), { featuredImg,
         gallery,

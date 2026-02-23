@@ -1,7 +1,6 @@
 import express from "express";
-import { multerUpload } from "../../config/multer.config";
+import { multerMemory } from "../../config/multer.config";
 import { brandsControllers } from "./brands.controller";
-// import upload from "../../middlewares/upload"; // ✅ your multer middleware
 
 const router = express.Router();
 
@@ -10,7 +9,7 @@ router.get("/:id", brandsControllers.getSingleBrand);
 
 router.post(
   "/create-brand",
-  multerUpload.fields([
+  multerMemory.fields([
     { name: "iconFile", maxCount: 1 },
     { name: "imagesFiles", maxCount: 10 },
   ]),
@@ -19,7 +18,7 @@ router.post(
 
 router.patch(
   "/update-brand/:id",
-  multerUpload.fields([
+  multerMemory.fields([
     { name: "iconFile", maxCount: 1 },
     { name: "imagesFiles", maxCount: 10 },
   ]),

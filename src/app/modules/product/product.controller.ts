@@ -71,45 +71,40 @@ const createProduct = catchAsync(async (req, res) => {
   const files =
     (req.files as { [fieldname: string]: Express.Multer.File[] }) || {};
 
-  // req.body is already parsed by validateRequest middleware
-  const parsedData = req.body;
+  // Parse data field if sent as JSON string
+  let parsedData = req.body;
+  if (req.body.data) {
+    try {
+      parsedData = typeof req.body.data === 'string' ? JSON.parse(req.body.data) : req.body.data;
+    } catch (error) {
+      parsedData = req.body;
+    }
+  }
 
-  // Upload images to Cloudinary
-  const uploadToCloudinary = (buffer: Buffer): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      cloudinaryUpload.uploader.upload_stream(
-        { resource_type: 'auto' },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result!.secure_url);
-        }
-      ).end(buffer);
-    });
-  };
-
+  // Images already uploaded to Cloudinary via multer
   let featuredImg = parsedData.featuredImg || "";
-  if (files["featuredImgFile"]?.[0]) {
-    featuredImg = await uploadToCloudinary(files["featuredImgFile"][0].buffer);
+  if (files["featuredImgFile"]?.[0]?.path) {
+    featuredImg = files["featuredImgFile"][0].path;
   }
 
   let gallery: string[] = parsedData.gallery || [];
   if (files["galleryImagesFiles"]?.length) {
-    gallery = await Promise.all(
-      files["galleryImagesFiles"].map(f => uploadToCloudinary(f.buffer))
-    );
+    gallery = files["galleryImagesFiles"].map(f => f.path);
   }
 
   let previewImg: string[] = parsedData.previewImg || [];
   if (files["previewImgFile"]?.length) {
-    previewImg = await Promise.all(
-      files["previewImgFile"].map(f => uploadToCloudinary(f.buffer))
-    );
+    previewImg = files["previewImgFile"].map(f => f.path);
   }
 
-  // PDF link handling (only for book products)
   let pdfUrl = parsedData.previewPdf || undefined;
   if (pdfUrl && pdfUrl.includes('/view')) {
     pdfUrl = pdfUrl.replace('/view?usp=sharing', '/preview').replace('/view', '/preview');
+  }
+
+  // Clean up empty date fields
+  if (parsedData.productInfo?.publicationDate === '' || parsedData.productInfo?.publicationDate === ' ') {
+    delete parsedData.productInfo.publicationDate;
   }
 
   const productData = {

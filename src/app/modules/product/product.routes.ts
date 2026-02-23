@@ -28,7 +28,6 @@ router.post(
     { name: "featuredImgFile", maxCount: 1 },
     { name: "previewImgFile", maxCount: 20 },
   ]),
-  validateRequest(createProductZodSchema),
   productControllers.createProduct
 );
 
@@ -39,7 +38,6 @@ router.patch(
     { name: "featuredImgFile", maxCount: 1 },
     { name: "previewImgFile", maxCount: 20 },
   ]),
-  validateRequest(updateProductZodSchema),
   productControllers.updateProduct
 );
 

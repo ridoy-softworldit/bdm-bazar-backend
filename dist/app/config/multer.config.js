@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.multerUpload = void 0;
+exports.multerMemory = exports.multerUpload = void 0;
 const multer_storage_cloudinary_1 = require("multer-storage-cloudinary");
 const cloudinary_config_1 = require("./cloudinary.config");
 const multer_1 = __importDefault(require("multer"));
@@ -31,7 +31,6 @@ const storage = new multer_storage_cloudinary_1.CloudinaryStorage({
             fileName;
         const isPdf = file.mimetype === 'application/pdf';
         if (isPdf) {
-            // PDFs use memory storage for Google Drive upload
             return {
                 resource_type: 'raw',
                 public_id: `${uniqueFileName}.pdf`,
@@ -44,8 +43,11 @@ const storage = new multer_storage_cloudinary_1.CloudinaryStorage({
         };
     }),
 });
-// Use memory storage for PDFs, Cloudinary for images
-const memoryStorage = multer_1.default.memoryStorage();
+// Cloudinary storage for direct upload (categories)
 exports.multerUpload = (0, multer_1.default)({
+    storage: storage,
+});
+// Memory storage for manual buffer upload (brands, products)
+exports.multerMemory = (0, multer_1.default)({
     storage: multer_1.default.memoryStorage(),
 });

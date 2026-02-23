@@ -128,14 +128,21 @@ exports.createProductZodSchema = zod_1.z.object({
             .object({
             authors: zod_1.z.array(zod_1.z.string()).optional(),
             publisher: zod_1.z.string().optional(),
+            edition: zod_1.z.string().optional(),
+            editionYear: zod_1.z.number().optional(),
             numberOfPages: zod_1.z.number().optional(),
             country: zod_1.z.string().optional(),
             language: zod_1.z.string().optional(),
+            isbn: zod_1.z.string().optional(),
+            binding: zod_1.z.enum(["hardcover", "paperback"]).optional(),
         })
             .optional(),
         format: zod_1.z
             .enum(["hardcover", "paperback", "ebook", "audiobook"])
             .optional(),
+        genre: zod_1.z.array(zod_1.z.string()).optional(),
+        series: zod_1.z.string().optional(),
+        translator: zod_1.z.string().optional(),
     })
         .optional(),
 });
