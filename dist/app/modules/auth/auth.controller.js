@@ -53,8 +53,10 @@ const loginUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void
     });
 }));
 const loginUserUsingProvider = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const userInfo = req === null || req === void 0 ? void 0 : req.body;
     const result = yield auth_service_1.AuthServices.loginUserUsingProviderFromDB(userInfo);
+    const userData = ((_a = result === null || result === void 0 ? void 0 : result.user) === null || _a === void 0 ? void 0 : _a.toJSON) ? result.user.toJSON() : result === null || result === void 0 ? void 0 : result.user;
     (0, sendResponse_1.default)(res
         .cookie("accessToken", result === null || result === void 0 ? void 0 : result.accessToken, {
         httpOnly: true,
@@ -71,7 +73,7 @@ const loginUserUsingProvider = (0, catchAsync_1.default)((req, res) => __awaiter
         success: true,
         statusCode: http_status_1.default.OK,
         message: "User Logged in Successfully!",
-        data: result === null || result === void 0 ? void 0 : result.user,
+        data: Object.assign(Object.assign({}, userData), { accessToken: result === null || result === void 0 ? void 0 : result.accessToken }),
     });
 }));
 const refreshToken = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {

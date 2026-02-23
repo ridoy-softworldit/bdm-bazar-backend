@@ -15,5 +15,7 @@ exports.userRole = {
     customer: "customer",
     admin: "admin",
     "super-admin": "super-admin",
+    "admin-staff": "admin-staff",
     vendor: "vendor",
+    "vendor-staff": "vendor-staff",
 };

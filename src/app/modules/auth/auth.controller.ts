@@ -49,6 +49,8 @@ const loginUserUsingProvider = catchAsync(async (req, res) => {
   const userInfo = req?.body;
   const result = await AuthServices.loginUserUsingProviderFromDB(userInfo);
 
+  const userData = result?.user?.toJSON ? result.user.toJSON() : result?.user;
+
   sendResponse(
     res
       .cookie("accessToken", result?.accessToken, {
@@ -67,7 +69,7 @@ const loginUserUsingProvider = catchAsync(async (req, res) => {
       success: true,
       statusCode: httpStatus.OK,
       message: "User Logged in Successfully!",
-      data: result?.user,
+      data: { ...userData, accessToken: result?.accessToken },
     }
   );
 });

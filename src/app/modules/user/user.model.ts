@@ -59,6 +59,15 @@ const userSchema = new Schema<TUser>(
       type: Object,
       default: null,
     },
+    address: {
+      label: { type: String },
+      fullAddress: { type: String },
+      city: { type: String },
+      district: { type: String },
+      area: { type: String },
+      zone: { type: String },
+      postalCode: { type: String },
+    },
     resetPasswordToken: {
       type: String,
     },

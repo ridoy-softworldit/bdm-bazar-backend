@@ -12,6 +12,16 @@ type TGender = "male" | "female" | "other";
 
 type TUserStatus = "active" | "inActive" | "banned";
 
+type TAddress = {
+  label?: string;
+  fullAddress?: string;
+  city?: string;
+  district?: string;
+  area?: string;
+  zone?: string;
+  postalCode?: string;
+};
+
 export type TUser = {
   name: string;
   email: string;
@@ -25,6 +35,7 @@ export type TUser = {
   walletPoint?: number;
   socials?: string[];
   cardInfo?: null;
+  address?: TAddress;
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
 };
