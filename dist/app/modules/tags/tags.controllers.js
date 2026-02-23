@@ -17,6 +17,7 @@ const http_status_1 = __importDefault(require("http-status"));
 const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const tags_services_1 = require("./tags.services");
+const cloudinary_config_1 = require("../../config/cloudinary.config");
 const getAllTags = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield tags_services_1.tagServices.getAllTagsFromDB();
     (0, sendResponse_1.default)(res, {
@@ -70,10 +71,28 @@ const getSingleTag = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
 const createTag = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d;
     const files = req.files || {};
-    const tagData = Object.assign(Object.assign({}, req.body), { image: ((_b = (_a = files["imageFile"]) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.path) || req.body.image || "", icon: {
+    let iconUrl = req.body.iconUrl || "";
+    if ((_b = (_a = files["iconFile"]) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.buffer) {
+        const uploaded = yield (0, cloudinary_config_1.uploadBufferToCloudinary)(files["iconFile"][0].buffer, files["iconFile"][0].originalname);
+        iconUrl = (uploaded === null || uploaded === void 0 ? void 0 : uploaded.secure_url) || "";
+    }
+    let imageUrl = req.body.image && req.body.image.trim() ? req.body.image : undefined;
+    if ((_d = (_c = files["imageFile"]) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.buffer) {
+        const uploaded = yield (0, cloudinary_config_1.uploadBufferToCloudinary)(files["imageFile"][0].buffer, files["imageFile"][0].originalname);
+        imageUrl = uploaded === null || uploaded === void 0 ? void 0 : uploaded.secure_url;
+    }
+    const tagData = {
+        name: req.body.name,
+        slug: req.body.slug,
+        details: req.body.details,
+        icon: {
             name: req.body.iconName || "",
-            url: ((_d = (_c = files["iconFile"]) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.path) || req.body.iconUrl || "",
-        } });
+            url: iconUrl,
+        },
+    };
+    if (imageUrl) {
+        tagData.image = imageUrl;
+    }
     const result = yield tags_services_1.tagServices.createTagOnDB(tagData);
     (0, sendResponse_1.default)(res, {
         success: true,
@@ -105,26 +124,28 @@ const createTag = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void
 //   });
 // });
 const updateTag = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d;
     const { id } = req.params;
     const files = req.files || {};
     const updatedData = Object.assign({}, req.body);
-    if ((_b = (_a = files["imageFile"]) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.path) {
-        updatedData.image = files["imageFile"][0].path;
+    if ((_b = (_a = files["imageFile"]) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.buffer) {
+        const uploaded = yield (0, cloudinary_config_1.uploadBufferToCloudinary)(files["imageFile"][0].buffer, files["imageFile"][0].originalname);
+        updatedData.image = (uploaded === null || uploaded === void 0 ? void 0 : uploaded.secure_url) || "";
     }
-    else if (req.body.imageFile) {
-        updatedData.image = (_c = req.body) === null || _c === void 0 ? void 0 : _c.imageFile;
+    else if (req.body.image) {
+        updatedData.image = req.body.image;
     }
-    if ((_e = (_d = files["iconFile"]) === null || _d === void 0 ? void 0 : _d[0]) === null || _e === void 0 ? void 0 : _e.path) {
+    if ((_d = (_c = files["iconFile"]) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.buffer) {
+        const uploaded = yield (0, cloudinary_config_1.uploadBufferToCloudinary)(files["iconFile"][0].buffer, files["iconFile"][0].originalname);
         updatedData.icon = {
             name: req.body.iconName || "",
-            url: files["iconFile"][0].path,
+            url: (uploaded === null || uploaded === void 0 ? void 0 : uploaded.secure_url) || "",
         };
     }
-    else if (req.body.iconFile || req.body.iconName) {
+    else if (req.body.iconUrl || req.body.iconName) {
         updatedData.icon = {
             name: req.body.iconName || "",
-            url: req.body.iconFile || "",
+            url: req.body.iconUrl || "",
         };
     }
     const result = yield tags_services_1.tagServices.updateTagInDB(id, updatedData);

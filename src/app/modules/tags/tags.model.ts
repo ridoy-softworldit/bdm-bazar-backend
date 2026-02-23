@@ -25,7 +25,6 @@ const tagSchema = new Schema<TTag>(
     icon: iconSchema,
     image: {
       type: String,
-      required: [true, "Image url is required!"],
     },
   },
   {

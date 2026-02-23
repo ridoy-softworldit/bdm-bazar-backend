@@ -2,6 +2,7 @@ import httpStatus from "http-status";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { tagServices } from "./tags.services";
+import { uploadBufferToCloudinary } from "../../config/cloudinary.config";
 
 const getAllTags = catchAsync(async (req, res) => {
   const result = await tagServices.getAllTagsFromDB();
@@ -67,14 +68,37 @@ const createTag = catchAsync(async (req, res) => {
   const files =
     (req.files as { [fieldname: string]: Express.Multer.File[] }) || {};
 
-  const tagData = {
-    ...req.body,
-    image: files["imageFile"]?.[0]?.path || req.body.image || "",
+  let iconUrl = req.body.iconUrl || "";
+  if (files["iconFile"]?.[0]?.buffer) {
+    const uploaded = await uploadBufferToCloudinary(
+      files["iconFile"][0].buffer,
+      files["iconFile"][0].originalname
+    );
+    iconUrl = uploaded?.secure_url || "";
+  }
+
+  let imageUrl = req.body.image && req.body.image.trim() ? req.body.image : undefined;
+  if (files["imageFile"]?.[0]?.buffer) {
+    const uploaded = await uploadBufferToCloudinary(
+      files["imageFile"][0].buffer,
+      files["imageFile"][0].originalname
+    );
+    imageUrl = uploaded?.secure_url;
+  }
+
+  const tagData: any = {
+    name: req.body.name,
+    slug: req.body.slug,
+    details: req.body.details,
     icon: {
       name: req.body.iconName || "",
-      url: files["iconFile"]?.[0]?.path || req.body.iconUrl || "",
+      url: iconUrl,
     },
   };
+
+  if (imageUrl) {
+    tagData.image = imageUrl;
+  }
 
   const result = await tagServices.createTagOnDB(tagData);
 
@@ -121,21 +145,29 @@ const updateTag = catchAsync(async (req, res) => {
 
   const updatedData: any = { ...req.body };
 
-  if (files["imageFile"]?.[0]?.path) {
-    updatedData.image = files["imageFile"][0].path;
-  } else if (req.body.imageFile) {
-    updatedData.image = req.body?.imageFile;
+  if (files["imageFile"]?.[0]?.buffer) {
+    const uploaded = await uploadBufferToCloudinary(
+      files["imageFile"][0].buffer,
+      files["imageFile"][0].originalname
+    );
+    updatedData.image = uploaded?.secure_url || "";
+  } else if (req.body.image) {
+    updatedData.image = req.body.image;
   }
 
-  if (files["iconFile"]?.[0]?.path) {
+  if (files["iconFile"]?.[0]?.buffer) {
+    const uploaded = await uploadBufferToCloudinary(
+      files["iconFile"][0].buffer,
+      files["iconFile"][0].originalname
+    );
     updatedData.icon = {
       name: req.body.iconName || "",
-      url: files["iconFile"][0].path,
+      url: uploaded?.secure_url || "",
     };
-  } else if (req.body.iconFile || req.body.iconName) {
+  } else if (req.body.iconUrl || req.body.iconName) {
     updatedData.icon = {
       name: req.body.iconName || "",
-      url: req.body.iconFile || "",
+      url: req.body.iconUrl || "",
     };
   }
 

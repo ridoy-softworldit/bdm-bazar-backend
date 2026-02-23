@@ -24,12 +24,5 @@ exports.createTagZodSchema = zod_1.z.object({
             ? "A short detail is required!"
             : "Not a string!",
     }),
-    // icon: iconSchema,
-    // image: z
-    //   .string({
-    //     error: (issue) =>
-    //       issue.input === undefined ? "Image URL is required!" : "Not a string!",
-    //   })
-    //   .url("Invalid image URL!"),
-    image: zod_1.z.string().optional(),
+    image: zod_1.z.string().optional().or(zod_1.z.literal('')).transform(val => val === '' ? undefined : val),
 });
