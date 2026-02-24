@@ -29,11 +29,18 @@ app.use((0, cors_1.default)({
     ],
     credentials: true,
 }));
+// Prevent Vercel edge cache from caching CORS responses
+app.use((req, res, next) => {
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+    next();
+});
 //app routes
 app.use("/api/v1", routes_1.default);
 //root route
 app.get("/", (req, res) => {
-    res.send("Rokomari server boosted on....🔥🔥🚀");
+    res.send("bdm bazar backend api server boosted on....🔥🔥🚀");
 });
 // //global error handler
 app.use(globalErrorHandler_1.default);
