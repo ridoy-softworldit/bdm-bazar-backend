@@ -37,6 +37,7 @@ const transfer_route_1 = require("../modules/transfer/transfer.route");
 const user_routes_1 = require("../modules/user/user.routes");
 const vendor_route_1 = require("../modules/vendor/vendor.route");
 const withdrawals_routes_1 = require("./../modules/withdrawals/withdrawals.routes");
+const contact_routes_1 = require("../modules/contact/contact.routes");
 const router = express_1.default.Router();
 const moduleRoutes = [
     {
@@ -166,6 +167,10 @@ const moduleRoutes = [
     {
         path: "/dynamic-pages",
         route: dynamic_pages_routes_1.dynamicPagesRoutes,
+    },
+    {
+        path: "/contact",
+        route: contact_routes_1.ContactRoutes,
     },
     {
         path: "/",

@@ -32,6 +32,7 @@ import { TransferRoutes } from "../modules/transfer/transfer.route";
 import { UserRoutes } from "../modules/user/user.routes";
 import { VendorRoutes } from "../modules/vendor/vendor.route";
 import { WithdrawalRoutes } from "./../modules/withdrawals/withdrawals.routes";
+import { ContactRoutes } from "../modules/contact/contact.routes";
 
 const router = express.Router();
 
@@ -163,6 +164,10 @@ const moduleRoutes = [
   {
     path: "/dynamic-pages",
     route: dynamicPagesRoutes,
+  },
+  {
+    path: "/contact",
+    route: ContactRoutes,
   },
   {
     path: "/",
