@@ -145,7 +145,6 @@ const updateMfsSettings = (0, catchAsync_1.default)((req, res) => __awaiter(void
             updatedData.mobileMfs = JSON.parse(req.body.mobileMfs);
         }
         catch (err) {
-            console.error("Failed to parse mobileMfs JSON:", err);
             updatedData.mobileMfs = {};
         }
     }

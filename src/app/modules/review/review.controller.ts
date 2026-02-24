@@ -12,6 +12,7 @@ const createReview = catchAsync(async (req, res) => {
 
   const reviewData = {
     ...req.body,
+    user: req.user._id || req.user.id,
     photos,
   };
 

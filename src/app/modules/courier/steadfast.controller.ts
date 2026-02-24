@@ -5,9 +5,7 @@ import * as steadfastService from "./steadfast.service";
 
 // 🔹 Create Single Order
 export const createOrderController = catchAsync(async (req, res) => {
-  console.log('Received order data:', req.body);
   const result = await steadfastService.createOrder(req.body);
-  console.log('Steadfast API result:', result);
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.CREATED,

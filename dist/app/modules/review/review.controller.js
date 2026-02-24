@@ -21,7 +21,7 @@ const review_service_1 = require("./review.service");
 const createReview = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const files = req.files || {};
     const photos = files["photos"] ? files["photos"].map((f) => f.path) : [];
-    const reviewData = Object.assign(Object.assign({}, req.body), { photos });
+    const reviewData = Object.assign(Object.assign({}, req.body), { user: req.user._id || req.user.id, photos });
     const result = yield review_service_1.reviewServices.createReviewOnDB(reviewData);
     (0, sendResponse_1.default)(res, {
         success: true,

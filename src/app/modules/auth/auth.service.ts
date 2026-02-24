@@ -103,9 +103,20 @@ const refreshAccessToken = async (refreshToken: string) => {
       config.jwt_refresh_secret as string
     ) as jwt.JwtPayload;
 
+    const user = await UserModel.findOne({ email: decoded.email }).select("-password");
+
+    if (!user) {
+      throw new AppError(httpStatus.NOT_FOUND, "User not found!");
+    }
+
     const jwtPayload = {
-      email: decoded.email,
-      role: decoded.role,
+      _id: user._id,
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      gender: user.gender,
+      walletPoint: user.walletPoint,
     };
 
     const accessToken = jwt.sign(

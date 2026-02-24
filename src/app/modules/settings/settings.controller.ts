@@ -164,7 +164,6 @@ const updateMfsSettings = catchAsync(async (req, res) => {
     try {
       updatedData.mobileMfs = JSON.parse(req.body.mobileMfs);
     } catch (err) {
-      console.error("Failed to parse mobileMfs JSON:", err);
       updatedData.mobileMfs = {};
     }
   } else {

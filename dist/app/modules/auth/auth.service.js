@@ -85,9 +85,18 @@ const loginUserUsingProviderFromDB = (payload) => __awaiter(void 0, void 0, void
 const refreshAccessToken = (refreshToken) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const decoded = jsonwebtoken_1.default.verify(refreshToken, config_1.default.jwt_refresh_secret);
+        const user = yield user_model_1.UserModel.findOne({ email: decoded.email }).select("-password");
+        if (!user) {
+            throw new handleAppError_1.default(http_status_1.default.NOT_FOUND, "User not found!");
+        }
         const jwtPayload = {
-            email: decoded.email,
-            role: decoded.role,
+            _id: user._id,
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            gender: user.gender,
+            walletPoint: user.walletPoint,
         };
         const accessToken = jsonwebtoken_1.default.sign(jwtPayload, config_1.default.jwt_access_secret, { expiresIn: "15m" });
         return { accessToken };

@@ -43,7 +43,6 @@ const uploadBufferToCloudinary = (buffer, fileName) => __awaiter(void 0, void 0,
         });
     }
     catch (error) {
-        console.log(error);
         throw new handleAppError_1.default(401, `Error uploading file ${error === null || error === void 0 ? void 0 : error.message}`);
     }
 });
@@ -55,7 +54,6 @@ const deleteImageFromCLoudinary = (url) => __awaiter(void 0, void 0, void 0, fun
         if (match && match[1]) {
             const public_id = match[1];
             yield cloudinary_1.v2.uploader.destroy(public_id);
-            console.log(`File ${public_id} is deleted from cloudinary`);
         }
     }
     catch (error) {

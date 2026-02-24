@@ -52,9 +52,7 @@ const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const steadfastService = __importStar(require("./steadfast.service"));
 // 🔹 Create Single Order
 exports.createOrderController = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('Received order data:', req.body);
     const result = yield steadfastService.createOrder(req.body);
-    console.log('Steadfast API result:', result);
     (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: http_status_1.default.CREATED,

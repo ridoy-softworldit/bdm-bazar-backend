@@ -8,7 +8,8 @@ import router from "./routes";
 const app: Application = express();
 
 //parsers
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
 app.use(morgan("dev"));
 
@@ -23,10 +24,6 @@ app.use(
       "https://bdmbazar.com",
       "https://admin.bdmbazar.com",
       "https://www.admin.bdmbazar.com",
-      "https://bdm-bazar-admin-two.vercel.app",
-      "https://bdm-bazar-customer.vercel.app",
-      "https://rokomari-customer-seven.vercel.app",
-      "*"
     ],
     credentials: true,
   })

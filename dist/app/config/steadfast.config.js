@@ -8,10 +8,6 @@ exports.steadfastConfig = {
 };
 // Validate config on load
 if (!exports.steadfastConfig.apiKey || !exports.steadfastConfig.secretKey) {
-    console.error('❌ Steadfast API credentials not found in environment variables!');
-    console.error('STEADFAST_API_KEY:', exports.steadfastConfig.apiKey ? 'SET' : 'MISSING');
-    console.error('STEADFAST_SECRET_KEY:', exports.steadfastConfig.secretKey ? 'SET' : 'MISSING');
 }
 else {
-    console.log('✅ Steadfast API credentials loaded successfully');
 }

@@ -39,9 +39,7 @@ const getAllFooterSettings = (0, catchAsync_1.default)((req, res) => __awaiter(v
     const result = yield footer_settings_service_1.footerSettingsServices.getAllFooterSettingsFromDB();
     // DEBUG: Check what's actually in the first submenu
     if (result && result[0]) {
-        console.log('🔍 GET ALL DEBUG - Document ID:', result[0]._id);
         if (result[0].menus && result[0].menus[0] && result[0].menus[0].submenus && result[0].menus[0].submenus[0]) {
-            console.log('🔍 GET ALL DEBUG - First submenu:', JSON.stringify(result[0].menus[0].submenus[0], null, 2));
         }
     }
     (0, sendResponse_1.default)(res, {

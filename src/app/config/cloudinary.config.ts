@@ -38,7 +38,6 @@ export const uploadBufferToCloudinary = async (buffer: Buffer, fileName: string)
 
     })
   } catch (error: any) {
-     console.log(error);
      throw new AppError(401, `Error uploading file ${error?.message}`);
   }
 }
@@ -55,7 +54,6 @@ export const deleteImageFromCLoudinary = async (url: string) => {
     if (match && match[1]) {
       const public_id = match[1];
       await cloudinary.uploader.destroy(public_id);
-      console.log(`File ${public_id} is deleted from cloudinary`);
     }
   } catch (error: any) {
     throw new AppError(401, 'Cloudinary image deletion failed', error.message);

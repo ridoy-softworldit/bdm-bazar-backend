@@ -30,9 +30,7 @@ const getAllFooterSettings = catchAsync(async (req, res) => {
   
   // DEBUG: Check what's actually in the first submenu
   if (result && result[0]) {
-    console.log('🔍 GET ALL DEBUG - Document ID:', result[0]._id);
     if (result[0].menus && result[0].menus[0] && result[0].menus[0].submenus && result[0].menus[0].submenus[0]) {
-      console.log('🔍 GET ALL DEBUG - First submenu:', JSON.stringify(result[0].menus[0].submenus[0], null, 2));
     }
   }
 
