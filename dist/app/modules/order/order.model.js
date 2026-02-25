@@ -41,7 +41,7 @@ const totalAmountSchema = new mongoose_1.Schema({
 const customerInfoSchema = new mongoose_1.Schema({
     firstName: { type: String, required: [true, "First name is required!"] },
     lastName: { type: String, required: [true, "Last name is required!"] },
-    email: { type: String, required: [true, "Email is required!"] },
+    email: { type: String },
     phone: { type: String, required: [true, "Phone number is required!"] },
     altPhone: { type: String },
     pickupLocation: {

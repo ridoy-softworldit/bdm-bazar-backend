@@ -17,7 +17,7 @@ export type TCustomerInfo = {
   firstName: string;
   lastName: string;
   pickupLocation: string;
-  email: string;
+  email?: string;
   phone: string;
   altPhone?: string;
   address: string;

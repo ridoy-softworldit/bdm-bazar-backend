@@ -56,7 +56,7 @@ const customerInfoSchema = new Schema<TCustomerInfo>(
   {
     firstName: { type: String, required: [true, "First name is required!"] },
     lastName: { type: String, required: [true, "Last name is required!"] },
-    email: { type: String, required: [true, "Email is required!"] },
+    email: { type: String },
     phone: { type: String, required: [true, "Phone number is required!"] },
     altPhone: { type: String },
     pickupLocation: {
