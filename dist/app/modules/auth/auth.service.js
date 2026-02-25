@@ -24,10 +24,10 @@ const sendEmail_1 = require("../../utils/sendEmail");
 // Helper to generate tokens
 const generateTokens = (payload) => {
     const accessToken = jsonwebtoken_1.default.sign(payload, config_1.default.jwt_access_secret, {
-        expiresIn: "15m", // shorter-lived
+        expiresIn: "24h",
     });
     const refreshToken = jsonwebtoken_1.default.sign(payload, config_1.default.jwt_refresh_secret, {
-        expiresIn: "7d", // longer-lived
+        expiresIn: "3d",
     });
     return { accessToken, refreshToken };
 };
@@ -98,7 +98,7 @@ const refreshAccessToken = (refreshToken) => __awaiter(void 0, void 0, void 0, f
             gender: user.gender,
             walletPoint: user.walletPoint,
         };
-        const accessToken = jsonwebtoken_1.default.sign(jwtPayload, config_1.default.jwt_access_secret, { expiresIn: "15m" });
+        const accessToken = jsonwebtoken_1.default.sign(jwtPayload, config_1.default.jwt_access_secret, { expiresIn: "24h" });
         return { accessToken };
     }
     catch (error) {

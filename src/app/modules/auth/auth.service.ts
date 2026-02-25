@@ -15,7 +15,7 @@ const generateTokens = (payload: object) => {
   });
 
   const refreshToken = jwt.sign(payload, config.jwt_refresh_secret as string, {
-    expiresIn: "7d", // longer-lived
+    expiresIn: "3d",
   });
 
   return { accessToken, refreshToken };

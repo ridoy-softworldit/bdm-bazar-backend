@@ -34,7 +34,7 @@ const loginUser = catchAsync(async (req, res) => {
         httpOnly: true,
         secure: config.node_env === "production",
         sameSite: "none",
-        maxAge: 24 * 60 * 60 * 1000,
+        maxAge: 3 * 24 * 60 * 60 * 1000,
       }),
     {
       success: true,
@@ -63,7 +63,7 @@ const loginUserUsingProvider = catchAsync(async (req, res) => {
         httpOnly: true,
         secure: config.node_env === "production",
         sameSite: "none",
-        maxAge: 24 * 60 * 60 * 1000,
+        maxAge: 3 * 24 * 60 * 60 * 1000, // 3 days
       }),
     {
       success: true,
