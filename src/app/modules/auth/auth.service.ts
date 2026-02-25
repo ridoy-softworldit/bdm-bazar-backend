@@ -11,7 +11,7 @@ import { sendEmail } from "../../utils/sendEmail";
 // Helper to generate tokens
 const generateTokens = (payload: object) => {
   const accessToken = jwt.sign(payload, config.jwt_access_secret as string, {
-    expiresIn: "15m", // shorter-lived
+    expiresIn: "24h",
   });
 
   const refreshToken = jwt.sign(payload, config.jwt_refresh_secret as string, {
@@ -122,7 +122,7 @@ const refreshAccessToken = async (refreshToken: string) => {
     const accessToken = jwt.sign(
       jwtPayload,
       config.jwt_access_secret as string,
-      { expiresIn: "15m" }
+      { expiresIn: "24h" }
     );
 
     return { accessToken };
