@@ -168,6 +168,13 @@ const resetPasswordInDB = (token, newPassword) => __awaiter(void 0, void 0, void
     });
     return {};
 });
+const getMeFromDB = (email) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = yield user_model_1.UserModel.findOne({ email }).select("-password");
+    if (!user) {
+        throw new handleAppError_1.default(http_status_1.default.NOT_FOUND, "User not found!");
+    }
+    return user;
+});
 exports.AuthServices = {
     registerUserOnDB,
     loginUserFromDB,
@@ -177,4 +184,5 @@ exports.AuthServices = {
     changePasswordInDB,
     forgotPasswordInDB,
     resetPasswordInDB,
+    getMeFromDB,
 };

@@ -28,7 +28,6 @@ const auth = (...requiredRoles: TUserRole[]) => {
     } catch (error) {
       throw new AppError(401, "Unauthorized !");
     }
-    const role = decoded.role;
 
     const user = await UserModel.findOne({ email: decoded?.email });
 
@@ -41,7 +40,7 @@ const auth = (...requiredRoles: TUserRole[]) => {
       throw new AppError(400, "The user is banned !");
     }
 
-    if (requiredRoles && !requiredRoles.includes(role)) {
+    if (requiredRoles.length && !requiredRoles.includes(user.role as TUserRole)) {
       throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized !");
     }
 

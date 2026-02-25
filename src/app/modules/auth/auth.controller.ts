@@ -170,6 +170,17 @@ const resetPassword = catchAsync(async (req, res) => {
   });
 });
 
+const getMe = catchAsync(async (req, res) => {
+  const user = await AuthServices.getMeFromDB(req.user.email);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "User data retrieved successfully!",
+    data: user,
+  });
+});
+
 export const AuthController = {
   registerUser,
   loginUser,
@@ -179,4 +190,5 @@ export const AuthController = {
   changePassword,
   forgotPassword,
   resetPassword,
+  getMe,
 };

@@ -232,6 +232,16 @@ const resetPasswordInDB = async (token: string, newPassword: string) => {
   return {};
 };
 
+const getMeFromDB = async (email: string) => {
+  const user = await UserModel.findOne({ email }).select("-password");
+
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, "User not found!");
+  }
+
+  return user;
+};
+
 export const AuthServices = {
   registerUserOnDB,
   loginUserFromDB,
@@ -241,4 +251,5 @@ export const AuthServices = {
   changePasswordInDB,
   forgotPasswordInDB,
   resetPasswordInDB,
+  getMeFromDB,
 };

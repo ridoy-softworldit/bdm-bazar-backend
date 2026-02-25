@@ -36,7 +36,6 @@ const auth = (...requiredRoles) => {
         catch (error) {
             throw new handleAppError_1.default(401, "Unauthorized !");
         }
-        const role = decoded.role;
         const user = yield user_model_1.UserModel.findOne({ email: decoded === null || decoded === void 0 ? void 0 : decoded.email });
         if (!user) {
             throw new handleAppError_1.default(404, "The user is not found !");
@@ -45,7 +44,7 @@ const auth = (...requiredRoles) => {
         if (isDeleted) {
             throw new handleAppError_1.default(400, "The user is banned !");
         }
-        if (requiredRoles && !requiredRoles.includes(role)) {
+        if (requiredRoles.length && !requiredRoles.includes(user.role)) {
             throw new handleAppError_1.default(http_status_1.default.UNAUTHORIZED, "You are not authorized !");
         }
         req.user = decoded;

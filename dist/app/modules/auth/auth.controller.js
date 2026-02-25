@@ -152,6 +152,15 @@ const resetPassword = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, 
         data: null,
     });
 }));
+const getMe = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = yield auth_service_1.AuthServices.getMeFromDB(req.user.email);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_1.default.OK,
+        message: "User data retrieved successfully!",
+        data: user,
+    });
+}));
 exports.AuthController = {
     registerUser,
     loginUser,
@@ -161,4 +170,5 @@ exports.AuthController = {
     changePassword,
     forgotPassword,
     resetPassword,
+    getMe,
 };

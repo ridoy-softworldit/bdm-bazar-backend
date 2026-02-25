@@ -2,6 +2,7 @@ import express from "express";
 import validateRequest from "../../middlewares/validateRequest";
 import { AuthController } from "./auth.controller";
 import { AuthValidations } from "./auth.validations";
+import auth from "../../middlewares/auth";
 
 const router = express.Router();
 
@@ -50,5 +51,8 @@ router.post(
   validateRequest(AuthValidations.resetPassword),
   AuthController.resetPassword
 );
+
+// Get current user
+router.get("/me", auth("customer", "admin", "super-admin", "admin-staff", "vendor", "vendor-staff"), AuthController.getMe);
 
 export const AuthRoutes = router;
