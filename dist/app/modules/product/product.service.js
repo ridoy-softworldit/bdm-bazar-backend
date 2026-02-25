@@ -146,7 +146,7 @@ const getSingleProductFromDB = (id) => __awaiter(void 0, void 0, void 0, functio
         .populate("bookInfo.specification.authors");
 });
 const updateProductOnDB = (id, updatedData) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
     const isProductExist = yield product_model_1.ProductModel.findById(id);
     if (!isProductExist) {
         throw new handleAppError_1.default(404, "Product not found!");
@@ -155,49 +155,61 @@ const updateProductOnDB = (id, updatedData) => __awaiter(void 0, void 0, void 0,
     if ((_b = (_a = updatedData.bookInfo) === null || _a === void 0 ? void 0 : _a.specification) === null || _b === void 0 ? void 0 : _b.binding) {
         updatedData.bookInfo.specification.binding = normalizeBinding(updatedData.bookInfo.specification.binding);
     }
-    // 🧩 Handle author image cleanup
-    // const oldAuthors = isProductExist.bookInfo?.specification?.authors || [];
-    // const newAuthors = updatedData.bookInfo?.specification?.authors || [];
-    // const deletedImages = oldAuthors
-    //   .filter((old) => !newAuthors.some((n) => n.image === old.image))
-    //   .map((a) => a.image)
-    //   .filter(Boolean);
-    // // 🧩 Handle gallery cleanup
-    // if ((updatedData as any).deletedImages?.length > 0) {
-    //   await Promise.all(
-    //     (updatedData as any).deletedImages.map((img: string) =>
-    //       deleteImageFromCLoudinary(img)
-    //     )
-    //   );
-    // }
-    // // 🧩 Handle gallery cleanup
-    // if ((updatedData as any).deletedImages?.length > 0) {
-    //   await Promise.all(
-    //     (updatedData as any).deletedImages.map((img: string) =>
-    //       deleteImageFromCLoudinary(img)
-    //     )
-    //   );
-    // }
-    // 🧩 Handle gallery cleanup
-    if (((_c = updatedData.deletedImages) === null || _c === void 0 ? void 0 : _c.length) > 0) {
+    // Merge categories (append new, keep existing)
+    if ((_c = updatedData.categoryAndTags) === null || _c === void 0 ? void 0 : _c.categories) {
+        const existingCategories = ((_d = isProductExist.categoryAndTags) === null || _d === void 0 ? void 0 : _d.categories) || [];
+        const newCategories = updatedData.categoryAndTags.categories;
+        updatedData.categoryAndTags.categories = [
+            ...new Set([...existingCategories.map(String), ...newCategories.map(String)])
+        ];
+    }
+    // Merge tags (append new, keep existing)
+    if ((_e = updatedData.categoryAndTags) === null || _e === void 0 ? void 0 : _e.tags) {
+        const existingTags = ((_f = isProductExist.categoryAndTags) === null || _f === void 0 ? void 0 : _f.tags) || [];
+        const newTags = updatedData.categoryAndTags.tags;
+        updatedData.categoryAndTags.tags = [
+            ...new Set([...existingTags.map(String), ...newTags.map(String)])
+        ];
+    }
+    // Merge authors (append new, keep existing)
+    if ((_h = (_g = updatedData.bookInfo) === null || _g === void 0 ? void 0 : _g.specification) === null || _h === void 0 ? void 0 : _h.authors) {
+        const existingAuthors = ((_k = (_j = isProductExist.bookInfo) === null || _j === void 0 ? void 0 : _j.specification) === null || _k === void 0 ? void 0 : _k.authors) || [];
+        const newAuthors = updatedData.bookInfo.specification.authors;
+        updatedData.bookInfo.specification.authors = [
+            ...new Set([...existingAuthors.map(String), ...newAuthors.map(String)])
+        ];
+    }
+    // Merge genre (append new, keep existing)
+    if ((_l = updatedData.bookInfo) === null || _l === void 0 ? void 0 : _l.genre) {
+        const existingGenre = ((_m = isProductExist.bookInfo) === null || _m === void 0 ? void 0 : _m.genre) || [];
+        const newGenre = updatedData.bookInfo.genre;
+        updatedData.bookInfo.genre = [...new Set([...existingGenre, ...newGenre])];
+    }
+    // Merge keywords (append new, keep existing)
+    if ((_o = updatedData.description) === null || _o === void 0 ? void 0 : _o.keywords) {
+        const existingKeywords = ((_p = isProductExist.description) === null || _p === void 0 ? void 0 : _p.keywords) || [];
+        const newKeywords = updatedData.description.keywords;
+        updatedData.description.keywords = [...new Set([...existingKeywords, ...newKeywords])];
+    }
+    // Handle gallery cleanup with deletedImages
+    if (((_q = updatedData.deletedImages) === null || _q === void 0 ? void 0 : _q.length) > 0) {
+        if ((_r = isProductExist.gallery) === null || _r === void 0 ? void 0 : _r.length) {
+            const restDBImages = isProductExist.gallery.filter((img) => { var _a; return !((_a = updatedData.deletedImages) === null || _a === void 0 ? void 0 : _a.includes(img)); });
+            const updatedGalleryImages = (updatedData.gallery || [])
+                .filter((img) => { var _a; return !((_a = updatedData.deletedImages) === null || _a === void 0 ? void 0 : _a.includes(img)); })
+                .filter((img) => !restDBImages.includes(img));
+            updatedData.gallery = [...restDBImages, ...updatedGalleryImages];
+        }
+        // Delete images from cloudinary
         yield Promise.all(updatedData.deletedImages.map((img) => (0, cloudinary_config_1.deleteImageFromCLoudinary)(img)));
     }
-    // handle gallery update with deletedImages
-    if (updatedData.deletedImages &&
-        updatedData.deletedImages.length > 0 &&
-        ((_d = isProductExist.gallery) === null || _d === void 0 ? void 0 : _d.length)) {
-        const restDBImages = isProductExist.gallery.filter((img) => { var _a; return !((_a = updatedData.deletedImages) === null || _a === void 0 ? void 0 : _a.includes(img)); });
-        const updatedGalleryImages = (updatedData.gallery || [])
-            .filter((img) => { var _a; return !((_a = updatedData.deletedImages) === null || _a === void 0 ? void 0 : _a.includes(img)); })
-            .filter((img) => !restDBImages.includes(img));
-        updatedData.gallery = [...restDBImages, ...updatedGalleryImages];
-    }
-    const updatedProduct = yield product_model_1.ProductModel.findByIdAndUpdate(id, { $set: updatedData }, { new: true, runValidators: true });
-    // delete images from cloudinary
-    if (((_e = updatedData.deletedImages) === null || _e === void 0 ? void 0 : _e.length) > 0) {
-        yield Promise.all(updatedData.deletedImages.map((img) => (0, cloudinary_config_1.deleteImageFromCLoudinary)(img)));
-    }
-    if (updatedData.featuredImg && isProductExist.featuredImg) {
+    const updatedProduct = yield product_model_1.ProductModel.findByIdAndUpdate(id, { $set: updatedData }, { new: true, runValidators: true })
+        .populate("categoryAndTags.publisher")
+        .populate("categoryAndTags.categories")
+        .populate("categoryAndTags.tags")
+        .populate("bookInfo.specification.authors");
+    // Delete old featured image if replaced
+    if (updatedData.featuredImg && isProductExist.featuredImg && updatedData.featuredImg !== isProductExist.featuredImg) {
         yield (0, cloudinary_config_1.deleteImageFromCLoudinary)(isProductExist.featuredImg);
     }
     return updatedProduct;

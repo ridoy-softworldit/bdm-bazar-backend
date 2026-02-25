@@ -138,64 +138,48 @@ const createProduct = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, 
 // });
 // Product delete controller
 const updateProduct = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e, _f;
     const { id } = req.params;
     const files = req.files || {};
-    // req.body is already parsed by validateRequest middleware
-    const parsedData = req.body;
-    const updatedData = Object.assign({}, parsedData);
-    // ✅ Safely handle featured image
-    if ((_b = (_a = files["featuredImgFile"]) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.path) {
-        updatedData.featuredImg = files["featuredImgFile"][0].path;
-    }
-    else if (parsedData.featuredImg) {
-        updatedData.featuredImg = parsedData.featuredImg;
-    }
-    // ✅ Safely handle PDF preview
-    if (parsedData.previewPdf) {
-        let pdfUrl = parsedData.previewPdf;
-        if (pdfUrl.includes('/view')) {
-            pdfUrl = pdfUrl.replace('/view?usp=sharing', '/preview').replace('/view', '/preview');
+    // Parse data field if sent as JSON string (same as create)
+    let parsedData = req.body;
+    if (req.body.data) {
+        try {
+            parsedData = typeof req.body.data === 'string' ? JSON.parse(req.body.data) : req.body.data;
         }
-        updatedData.previewPdf = pdfUrl;
+        catch (error) {
+            parsedData = req.body;
+        }
     }
-    else if (parsedData.previewPdf === null || parsedData.previewPdf === '') {
-        updatedData.previewPdf = undefined;
+    // Handle featured image
+    let featuredImg = parsedData.featuredImg;
+    if ((_b = (_a = files["featuredImgFile"]) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.path) {
+        featuredImg = files["featuredImgFile"][0].path;
     }
     // Handle gallery images
+    let gallery = parsedData.gallery || [];
     if ((_c = files["galleryImagesFiles"]) === null || _c === void 0 ? void 0 : _c.length) {
-        const newGalleryImages = files["galleryImagesFiles"].map((f) => f.path);
-        updatedData.gallery = Array.isArray(updatedData.gallery)
-            ? [...updatedData.gallery, ...newGalleryImages]
-            : newGalleryImages;
-    }
-    else if (updatedData.gallery) {
-        try {
-            updatedData.gallery = Array.isArray(updatedData.gallery)
-                ? updatedData.gallery
-                : JSON.parse(updatedData.gallery);
-        }
-        catch (_e) {
-            updatedData.gallery = [updatedData.gallery];
-        }
+        const newGalleryImages = files["galleryImagesFiles"].map(f => f.path);
+        gallery = Array.isArray(gallery) ? [...gallery, ...newGalleryImages] : newGalleryImages;
     }
     // Handle preview images
+    let previewImg = parsedData.previewImg || [];
     if ((_d = files["previewImgFile"]) === null || _d === void 0 ? void 0 : _d.length) {
-        const newPreviewImages = files["previewImgFile"].map((f) => f.path);
-        updatedData.previewImg = Array.isArray(updatedData.previewImg)
-            ? [...updatedData.previewImg, ...newPreviewImages]
-            : newPreviewImages;
+        const newPreviewImages = files["previewImgFile"].map(f => f.path);
+        previewImg = Array.isArray(previewImg) ? [...previewImg, ...newPreviewImages] : newPreviewImages;
     }
-    else if (updatedData.previewImg) {
-        try {
-            updatedData.previewImg = Array.isArray(updatedData.previewImg)
-                ? updatedData.previewImg
-                : JSON.parse(updatedData.previewImg);
-        }
-        catch (_f) {
-            updatedData.previewImg = [updatedData.previewImg];
-        }
+    // Handle PDF URL
+    let pdfUrl = parsedData.previewPdf;
+    if (pdfUrl && pdfUrl.includes('/view')) {
+        pdfUrl = pdfUrl.replace('/view?usp=sharing', '/preview').replace('/view', '/preview');
     }
+    // Clean up empty date fields
+    if (((_e = parsedData.productInfo) === null || _e === void 0 ? void 0 : _e.publicationDate) === '' || ((_f = parsedData.productInfo) === null || _f === void 0 ? void 0 : _f.publicationDate) === ' ') {
+        delete parsedData.productInfo.publicationDate;
+    }
+    const updatedData = Object.assign(Object.assign({}, parsedData), { featuredImg,
+        gallery,
+        previewImg, previewPdf: pdfUrl });
     const result = yield product_service_1.productServices.updateProductOnDB(id, updatedData);
     (0, sendResponse_1.default)(res, {
         success: true,

@@ -165,62 +165,54 @@ const updateProduct = catchAsync(async (req, res) => {
   const files =
     (req.files as { [fieldname: string]: Express.Multer.File[] }) || {};
 
-  // req.body is already parsed by validateRequest middleware
-  const parsedData = req.body;
-
-  const updatedData: any = {
-    ...parsedData,
-  };
-
-  // ✅ Safely handle featured image
-  if (files["featuredImgFile"]?.[0]?.path) {
-    updatedData.featuredImg = files["featuredImgFile"][0].path;
-  } else if (parsedData.featuredImg) {
-    updatedData.featuredImg = parsedData.featuredImg;
+  // Parse data field if sent as JSON string (same as create)
+  let parsedData = req.body;
+  if (req.body.data) {
+    try {
+      parsedData = typeof req.body.data === 'string' ? JSON.parse(req.body.data) : req.body.data;
+    } catch (error) {
+      parsedData = req.body;
+    }
   }
 
-  // ✅ Safely handle PDF preview
-  if (parsedData.previewPdf) {
-    let pdfUrl = parsedData.previewPdf;
-    if (pdfUrl.includes('/view')) {
-      pdfUrl = pdfUrl.replace('/view?usp=sharing', '/preview').replace('/view', '/preview');
-    }
-    updatedData.previewPdf = pdfUrl;
-  } else if (parsedData.previewPdf === null || parsedData.previewPdf === '') {
-    updatedData.previewPdf = undefined;
+  // Handle featured image
+  let featuredImg = parsedData.featuredImg;
+  if (files["featuredImgFile"]?.[0]?.path) {
+    featuredImg = files["featuredImgFile"][0].path;
   }
 
   // Handle gallery images
+  let gallery = parsedData.gallery || [];
   if (files["galleryImagesFiles"]?.length) {
-    const newGalleryImages = files["galleryImagesFiles"].map((f) => f.path);
-    updatedData.gallery = Array.isArray(updatedData.gallery)
-      ? [...updatedData.gallery, ...newGalleryImages]
-      : newGalleryImages;
-  } else if (updatedData.gallery) {
-    try {
-      updatedData.gallery = Array.isArray(updatedData.gallery)
-        ? updatedData.gallery
-        : JSON.parse(updatedData.gallery);
-    } catch {
-      updatedData.gallery = [updatedData.gallery];
-    }
+    const newGalleryImages = files["galleryImagesFiles"].map(f => f.path);
+    gallery = Array.isArray(gallery) ? [...gallery, ...newGalleryImages] : newGalleryImages;
   }
 
   // Handle preview images
+  let previewImg = parsedData.previewImg || [];
   if (files["previewImgFile"]?.length) {
-    const newPreviewImages = files["previewImgFile"].map((f) => f.path);
-    updatedData.previewImg = Array.isArray(updatedData.previewImg)
-      ? [...updatedData.previewImg, ...newPreviewImages]
-      : newPreviewImages;
-  } else if (updatedData.previewImg) {
-    try {
-      updatedData.previewImg = Array.isArray(updatedData.previewImg)
-        ? updatedData.previewImg
-        : JSON.parse(updatedData.previewImg);
-    } catch {
-      updatedData.previewImg = [updatedData.previewImg];
-    }
+    const newPreviewImages = files["previewImgFile"].map(f => f.path);
+    previewImg = Array.isArray(previewImg) ? [...previewImg, ...newPreviewImages] : newPreviewImages;
   }
+
+  // Handle PDF URL
+  let pdfUrl = parsedData.previewPdf;
+  if (pdfUrl && pdfUrl.includes('/view')) {
+    pdfUrl = pdfUrl.replace('/view?usp=sharing', '/preview').replace('/view', '/preview');
+  }
+
+  // Clean up empty date fields
+  if (parsedData.productInfo?.publicationDate === '' || parsedData.productInfo?.publicationDate === ' ') {
+    delete parsedData.productInfo.publicationDate;
+  }
+
+  const updatedData = {
+    ...parsedData,
+    featuredImg,
+    gallery,
+    previewImg,
+    previewPdf: pdfUrl,
+  };
 
   const result = await productServices.updateProductOnDB(id, updatedData);
 

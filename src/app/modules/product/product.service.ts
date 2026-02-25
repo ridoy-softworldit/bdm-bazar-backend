@@ -167,74 +167,81 @@ const updateProductOnDB = async (
     ) as "hardcover" | "paperback";
   }
 
-  // 🧩 Handle author image cleanup
-  // const oldAuthors = isProductExist.bookInfo?.specification?.authors || [];
-  // const newAuthors = updatedData.bookInfo?.specification?.authors || [];
+  // Merge categories (append new, keep existing)
+  if (updatedData.categoryAndTags?.categories) {
+    const existingCategories = isProductExist.categoryAndTags?.categories || [];
+    const newCategories = updatedData.categoryAndTags.categories;
+    updatedData.categoryAndTags.categories = [
+      ...new Set([...existingCategories.map(String), ...newCategories.map(String)])
+    ] as any;
+  }
 
-  // const deletedImages = oldAuthors
-  //   .filter((old) => !newAuthors.some((n) => n.image === old.image))
-  //   .map((a) => a.image)
-  //   .filter(Boolean);
+  // Merge tags (append new, keep existing)
+  if (updatedData.categoryAndTags?.tags) {
+    const existingTags = isProductExist.categoryAndTags?.tags || [];
+    const newTags = updatedData.categoryAndTags.tags;
+    updatedData.categoryAndTags.tags = [
+      ...new Set([...existingTags.map(String), ...newTags.map(String)])
+    ] as any;
+  }
 
-  // // 🧩 Handle gallery cleanup
-  // if ((updatedData as any).deletedImages?.length > 0) {
-  //   await Promise.all(
-  //     (updatedData as any).deletedImages.map((img: string) =>
-  //       deleteImageFromCLoudinary(img)
-  //     )
-  //   );
-  // }
-  // // 🧩 Handle gallery cleanup
-  // if ((updatedData as any).deletedImages?.length > 0) {
-  //   await Promise.all(
-  //     (updatedData as any).deletedImages.map((img: string) =>
-  //       deleteImageFromCLoudinary(img)
-  //     )
-  //   );
-  // }
+  // Merge authors (append new, keep existing)
+  if (updatedData.bookInfo?.specification?.authors) {
+    const existingAuthors = isProductExist.bookInfo?.specification?.authors || [];
+    const newAuthors = updatedData.bookInfo.specification.authors;
+    updatedData.bookInfo.specification.authors = [
+      ...new Set([...existingAuthors.map(String), ...newAuthors.map(String)])
+    ] as any;
+  }
 
-  // 🧩 Handle gallery cleanup
+  // Merge genre (append new, keep existing)
+  if (updatedData.bookInfo?.genre) {
+    const existingGenre = isProductExist.bookInfo?.genre || [];
+    const newGenre = updatedData.bookInfo.genre;
+    updatedData.bookInfo.genre = [...new Set([...existingGenre, ...newGenre])];
+  }
+
+  // Merge keywords (append new, keep existing)
+  if (updatedData.description?.keywords) {
+    const existingKeywords = isProductExist.description?.keywords || [];
+    const newKeywords = updatedData.description.keywords;
+    updatedData.description.keywords = [...new Set([...existingKeywords, ...newKeywords])];
+  }
+
+  // Handle gallery cleanup with deletedImages
   if ((updatedData as any).deletedImages?.length > 0) {
+    if (isProductExist.gallery?.length) {
+      const restDBImages = isProductExist.gallery.filter(
+        (img) => !(updatedData as any).deletedImages?.includes(img)
+      );
+
+      const updatedGalleryImages = (updatedData.gallery || [])
+        .filter((img) => !(updatedData as any).deletedImages?.includes(img))
+        .filter((img) => !restDBImages.includes(img));
+
+      updatedData.gallery = [...restDBImages, ...updatedGalleryImages];
+    }
+
+    // Delete images from cloudinary
     await Promise.all(
       (updatedData as any).deletedImages.map((img: string) =>
         deleteImageFromCLoudinary(img)
       )
     );
-  }
-
-  // handle gallery update with deletedImages
-  if (
-    (updatedData as any).deletedImages &&
-    (updatedData as any).deletedImages.length > 0 &&
-    isProductExist.gallery?.length
-  ) {
-    const restDBImages = isProductExist.gallery.filter(
-      (img) => !(updatedData as any).deletedImages?.includes(img)
-    );
-
-    const updatedGalleryImages = (updatedData.gallery || [])
-      .filter((img) => !(updatedData as any).deletedImages?.includes(img))
-      .filter((img) => !restDBImages.includes(img));
-
-    updatedData.gallery = [...restDBImages, ...updatedGalleryImages];
   }
 
   const updatedProduct = await ProductModel.findByIdAndUpdate(
     id,
     { $set: updatedData },
     { new: true, runValidators: true }
-  );
+  )
+    .populate("categoryAndTags.publisher")
+    .populate("categoryAndTags.categories")
+    .populate("categoryAndTags.tags")
+    .populate("bookInfo.specification.authors");
 
-  // delete images from cloudinary
-  if ((updatedData as any).deletedImages?.length > 0) {
-    await Promise.all(
-      (updatedData as any).deletedImages.map((img: string) =>
-        deleteImageFromCLoudinary(img)
-      )
-    );
-  }
-
-  if (updatedData.featuredImg && isProductExist.featuredImg) {
+  // Delete old featured image if replaced
+  if (updatedData.featuredImg && isProductExist.featuredImg && updatedData.featuredImg !== isProductExist.featuredImg) {
     await deleteImageFromCLoudinary(isProductExist.featuredImg);
   }
 
