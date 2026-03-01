@@ -19,9 +19,10 @@ const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const review_service_1 = require("./review.service");
 // ✅ Create Review
 const createReview = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
     const files = req.files || {};
     const photos = files["photos"] ? files["photos"].map((f) => f.path) : [];
-    const reviewData = Object.assign(Object.assign({}, req.body), { user: req.user._id || req.user.id, photos });
+    const reviewData = Object.assign(Object.assign({}, req.body), { user: ((_a = req.user) === null || _a === void 0 ? void 0 : _a._id) || ((_b = req.user) === null || _b === void 0 ? void 0 : _b.id) || req.body.user, photos });
     const result = yield review_service_1.reviewServices.createReviewOnDB(reviewData);
     (0, sendResponse_1.default)(res, {
         success: true,
